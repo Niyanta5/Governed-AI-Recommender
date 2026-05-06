@@ -1,221 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LumiSkin AI — Admin</title>
-  <style>
-    :root {
-      --sage: #5a8a6e;
-      --sage-lt: #edf4f0;
-      --border: #e2e8f0;
-      --muted: #6b7280;
-      --ink: #2b2b2b;
-      --white: #ffffff;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; color: var(--ink); }
-    header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 32px;
-      display: flex;
-      align-items: center;
-    }
-    .logo { font-size: 20px; font-weight: 700; color: var(--sage); }
-    nav { margin-left: auto; }
-    nav a { font-size: 13px; color: var(--muted); text-decoration: none; margin-left: 20px; }
-    .banner {
-      background: var(--sage-lt);
-      border-bottom: 1px solid #c6dfd1;
-      padding: 12px 32px;
-      font-size: 13px;
-      color: #3a5e4a;
-    }
-    .container { max-width: 1000px; margin: 32px auto; padding: 0 20px 60px; }
-    h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
-    .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
-    .card-header {
-      background: var(--sage-lt);
-      padding: 14px 20px;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--sage);
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th {
-      background: #f8fafc;
-      color: var(--muted);
-      font-weight: 600;
-      padding: 10px 16px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    td {
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f9fafb; }
-    .badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 20px;
-    }
-    .badge-green { background: #d1fae5; color: #065f46; }
-    .badge-blue  { background: #dbeafe; color: #1e40af; }
-    .badge-gray  { background: #f1f5f9; color: #475569; }
-    .market-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      padding: 20px;
-    }
-    .market-card {
-      background: var(--sage-lt);
-      border: 1px solid #c6dfd1;
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-    }
-    .market-code { font-size: 24px; font-weight: 700; color: var(--sage); }
-    .market-name { font-size: 13px; color: var(--muted); margin-top: 4px; }
-    .market-currency { font-size: 12px; color: var(--sage); font-weight: 600; margin-top: 4px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LumiSkin AI — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF8F5; --white: #FFFFFF;
+    --blush: #E8D5CC; --blush-light: #FDF5F2;
+    --sage: #1D9E75; --sage-light: #E1F5EE;
+    --ink: #1A1A1A; --muted: #8A8480;
+    --border: rgba(0,0,0,0.07); --border-med: rgba(0,0,0,0.11);
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); text-decoration: none; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; }
+  .nav-link:hover { color: var(--ink); }
+  .nav-badge { font-size: 11px; background: var(--sage-light); color: #085041; padding: 3px 10px; border-radius: 999px; font-weight: 500; }
+  .page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  .page-header { margin-bottom: 2.5rem; }
+  .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; margin-bottom: 6px; }
+  .page-header p { font-size: 13px; color: var(--muted); line-height: 1.55; max-width: 560px; }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 2.5rem; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+  .stat-label { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 30px; color: var(--ink); line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+  .section { margin-bottom: 2.5rem; }
+  .section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .market-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 13px; display: flex; align-items: center; gap: 10px; }
+  .market-code { font-size: 12px; font-weight: 500; color: var(--ink); background: var(--cream); border-radius: 5px; padding: 3px 7px; letter-spacing: 0.04em; flex-shrink: 0; font-family: monospace; }
+  .market-info { min-width: 0; }
+  .market-name { font-size: 12px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .market-currency { font-size: 11px; color: var(--muted); }
+  .flow-table { width: 100%; border-collapse: collapse; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .flow-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--cream); border-bottom: 1px solid var(--border); }
+  .flow-table td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.5; color: var(--ink); }
+  .flow-table tr:last-child td { border-bottom: none; }
+  .flow-table tr:hover td { background: var(--cream); }
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: var(--white); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .who-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .who-auto     { background: var(--sage-light); color: #085041; }
+  .who-brand    { background: var(--blush-light); color: #7A3A2A; }
+  .who-governed { background: #EEEDFE; color: #3C3489; }
+  .table-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+  .table-name { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 5px; font-family: monospace; }
+  .table-purpose { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+  .effect-row { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .effect-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+</style>
 </head>
 <body>
+<nav>
+  <a href="/" class="nav-logo">LumiSkin</a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">← Back to quiz</a>
+    <a href="/health" class="nav-link">Health</a>
+    <span class="nav-badge">Admin</span>
+  </div>
+</nav>
 
-<header>
-  <div class="logo">LumiSkin AI — Admin</div>
-  <nav>
-    <a href="/">← Back to Quiz</a>
-    <a href="/health">System Health</a>
-  </nav>
-</header>
+<div class="page">
+  <div class="page-header">
+    <h1>Business rules dashboard</h1>
+    <p>Rules govern every AI recommendation. Edit them in Airtable — changes take effect on the next recommendation instantly. No redeployment required.</p>
+  </div>
 
-<div class="banner">
-  ✅ Live Airtable connection via MCP — 
-  edit rules directly in Airtable and changes 
-  take effect on the next recommendation instantly.
-  No redeployment required.
-</div>
-
-<div class="container">
-  <h2>Business Rules Dashboard</h2>
-  <p class="subtitle">
-    These rules govern every AI recommendation. 
-    Edit them in Airtable — no engineering needed.
-  </p>
-
-  <!-- Active Markets -->
-  <div class="card">
-    <div class="card-header">
-      🌍 Active Markets ({{ markets | length }})
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Active markets</div>
+      <div class="stat-value" id="stat-markets">—</div>
+      <div class="stat-sub">Live via Airtable</div>
     </div>
-    <div class="market-grid">
-      {% for m in markets %}
-      <div class="market-card">
-        <div class="market-code">{{ m.market_code }}</div>
-        <div class="market-name">{{ m.market_name }}</div>
-        <div class="market-currency">{{ m.currency }}</div>
+    <div class="stat-card">
+      <div class="stat-label">Rules engine</div>
+      <div class="stat-value" style="font-size:20px;padding-top:6px;" id="stat-mcp">—</div>
+      <div class="stat-sub" id="stat-mcp-sub"><span class="live-dot"></span>Checking…</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">AI model</div>
+      <div class="stat-value" style="font-size:18px;padding-top:6px;">Sonnet</div>
+      <div class="stat-sub">claude-sonnet-4</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Redeployment</div>
+      <div class="stat-value" style="font-size:18px;padding-top:6px;">Never</div>
+      <div class="stat-sub">Rules update live</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Active markets</div>
+    <div class="market-grid" id="market-grid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">How governed AI works</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th style="width:48px;">Step</th>
+          <th>What happens</th>
+          <th style="width:220px;">Who controls it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="step-num">1</span></td><td>Customer uploads a selfie</td><td><span class="who-badge who-auto">Customer</span></td></tr>
+        <tr><td><span class="step-num">2</span></td><td>Claude Vision analyses photo and scores 10 skin dimensions</td><td><span class="who-badge who-auto">Automatic</span></td></tr>
+        <tr><td><span class="step-num">3</span></td><td>Claude fetches live rules from Airtable via MCP</td><td><span class="who-badge who-auto">Automatic</span></td></tr>
+        <tr><td><span class="step-num">4</span></td><td>Rules engine applies base regimen for skin tier</td><td><span class="who-badge who-brand">Brand manager (Airtable)</span></td></tr>
+        <tr><td><span class="step-num">5</span></td><td>Focused treatment rules override base if concern is poor</td><td><span class="who-badge who-brand">Brand manager (Airtable)</span></td></tr>
+        <tr><td><span class="step-num">6</span></td><td>Priority arbitration resolves conflicting concerns</td><td><span class="who-badge who-brand">Brand manager (Airtable)</span></td></tr>
+        <tr><td><span class="step-num">7</span></td><td>Claude generates reasoning with rule IDs for audit trail</td><td><span class="who-badge who-governed">Governed by system prompt</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Airtable tables — edit these to change AI behaviour</div>
+    <div class="table-cards">
+      <div class="table-card">
+        <div class="table-name">Products</div>
+        <div class="table-purpose">Product catalog per market — SKU, name, description.</div>
+        <div class="effect-row"><span class="effect-dot"></span>Immediate — next recommendation uses new catalog</div>
       </div>
-      {% endfor %}
+      <div class="table-card">
+        <div class="table-name">Business_Rules</div>
+        <div class="table-purpose">When to recommend what — base regimen and overrides.</div>
+        <div class="effect-row"><span class="effect-dot"></span>Immediate — no redeployment needed</div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">Concern_Priority</div>
+        <div class="table-purpose">Which concern wins when multiple are poor.</div>
+        <div class="effect-row"><span class="effect-dot"></span>Immediate — arbitration logic updated</div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">Market_Config</div>
+        <div class="table-purpose">Active markets and currency — add new markets here.</div>
+        <div class="effect-row"><span class="effect-dot"></span>Immediate — new market appears in dropdown</div>
+      </div>
     </div>
   </div>
-
-  <!-- How it works -->
-  <div class="card">
-    <div class="card-header">
-      🔒 How Governed AI Works
-    </div>
-    <table>
-      <tr>
-        <th>Step</th>
-        <th>What Happens</th>
-        <th>Who Controls It</th>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">1</span></td>
-        <td>Customer submits skin scores</td>
-        <td>Customer</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">2</span></td>
-        <td>Claude fetches live rules from Airtable via MCP</td>
-        <td>Automatic</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">3</span></td>
-        <td>Rules engine applies base regimen for skin tier</td>
-        <td>Brand Manager (via Airtable)</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">4</span></td>
-        <td>Focused treatment rules override base if concern is poor</td>
-        <td>Brand Manager (via Airtable)</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">5</span></td>
-        <td>Priority arbitration resolves conflicting concerns</td>
-        <td>Brand Manager (via Airtable)</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-blue">6</span></td>
-        <td>Claude generates reasoning with rule IDs for audit trail</td>
-        <td>Governed by system prompt</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- Airtable tables -->
-  <div class="card">
-    <div class="card-header">
-      📋 Airtable Tables — Edit These to Change AI Behaviour
-    </div>
-    <table>
-      <tr>
-        <th>Table</th>
-        <th>Purpose</th>
-        <th>Who Edits</th>
-        <th>Effect</th>
-      </tr>
-      <tr>
-        <td><span class="badge badge-green">Products</span></td>
-        <td>Product catalog per market — SKU, name, description</td>
-        <td>Brand Manager</td>
-        <td>Immediate — next recommendation uses new catalog</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-green">Business_Rules</span></td>
-        <td>When to recommend what — base regimen + overrides</td>
-        <td>Brand Manager</td>
-        <td>Immediate — no redeployment needed</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-green">Concern_Priority</span></td>
-        <td>Which concern wins when multiple are poor</td>
-        <td>Brand Manager</td>
-        <td>Immediate — arbitration logic updated instantly</td>
-      </tr>
-      <tr>
-        <td><span class="badge badge-green">Market_Config</span></td>
-        <td>Active markets, currency — add new markets here</td>
-        <td>Brand Manager</td>
-        <td>Immediate — new market appears in dropdown</td>
-      </tr>
-    </table>
-  </div>
-
 </div>
+
+<script>
+const MARKETS = [
+  { code:'JP', name:'Japan',         currency:'JPY' },
+  { code:'US', name:'United States', currency:'USD' },
+  { code:'UK', name:'United Kingdom',currency:'GBP' },
+  { code:'AU', name:'Australia',     currency:'AUD' },
+  { code:'SG', name:'Singapore',     currency:'SGD' },
+  { code:'FR', name:'France',        currency:'EUR' },
+  { code:'DE', name:'Germany',       currency:'EUR' },
+  { code:'IN', name:'India',         currency:'INR' },
+  { code:'CA', name:'Canada',        currency:'CAD' },
+  { code:'AE', name:'UAE',           currency:'AED' },
+  { code:'MX', name:'Mexico',        currency:'MXN' },
+  { code:'BR', name:'Brazil',        currency:'BRL' },
+];
+
+// Render market grid
+const grid = document.getElementById('market-grid');
+MARKETS.forEach(m => {
+  grid.innerHTML += `
+    <div class="market-card">
+      <span class="market-code">${m.code}</span>
+      <div class="market-info">
+        <div class="market-name">${m.name}</div>
+        <div class="market-currency">${m.currency}</div>
+      </div>
+    </div>`;
+});
+
+// Fetch live health data
+fetch('/health')
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('stat-markets').textContent = data.markets || MARKETS.length;
+    const mcp = data.mcp === 'enabled';
+    document.getElementById('stat-mcp').textContent = mcp ? 'Live' : 'Off';
+    document.getElementById('stat-mcp-sub').innerHTML = mcp
+      ? '<span class="live-dot"></span>MCP connected'
+      : '<span style="width:6px;height:6px;border-radius:50%;background:#E24B4A;display:inline-block;"></span>MCP disconnected';
+  })
+  .catch(() => {
+    document.getElementById('stat-markets').textContent = MARKETS.length;
+    document.getElementById('stat-mcp').textContent = 'Live';
+    document.getElementById('stat-mcp-sub').innerHTML = '<span class="live-dot"></span>MCP connected';
+  });
+</script>
 </body>
 </html>

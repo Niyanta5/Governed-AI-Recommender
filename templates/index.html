@@ -8,77 +8,42 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --cream: #FAF8F5;
-    --white: #FFFFFF;
-    --blush: #E8D5CC;
-    --blush-light: #FDF5F2;
-    --sage: #1D9E75;
-    --sage-light: #E1F5EE;
-    --amber-light: #FAEEDA;
-    --coral-light: #FCEBEB;
-    --ink: #1A1A1A;
-    --ink-soft: #2E2E2E;
-    --muted: #8A8480;
-    --border: rgba(0,0,0,0.07);
-    --border-med: rgba(0,0,0,0.11);
-    --radius: 16px;
-    --radius-sm: 10px;
+    --cream: #FAF8F5; --white: #FFFFFF;
+    --blush: #E8D5CC; --blush-light: #FDF5F2;
+    --sage: #1D9E75; --sage-light: #E1F5EE;
+    --coral-light: #FCEBEB; --amber-light: #FAEEDA;
+    --ink: #1A1A1A; --ink-soft: #2E2E2E; --muted: #8A8480;
+    --border: rgba(0,0,0,0.07); --border-med: rgba(0,0,0,0.11);
+    --radius: 16px; --radius-sm: 10px;
   }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-  }
-
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
   nav {
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 0 1.5rem;
-    height: 54px;
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem; height: 54px;
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 10;
   }
-  .nav-logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px; color: var(--ink);
-    text-decoration: none; letter-spacing: 0.02em;
-  }
-  .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.03em; }
+  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); text-decoration: none; }
+  .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; }
   .nav-link:hover { color: var(--ink); }
-
   .page { max-width: 500px; margin: 0 auto; padding: 2.25rem 1.25rem 5rem; }
-
   .progress { display: flex; align-items: center; margin-bottom: 2.5rem; }
   .p-dot {
     width: 28px; height: 28px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 500; flex-shrink: 0;
-    transition: background 0.25s, color 0.25s, border-color 0.25s;
+    transition: background 0.25s, color 0.25s;
   }
   .p-dot.idle   { background: var(--white); border: 1px solid var(--border-med); color: var(--muted); }
   .p-dot.active { background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
   .p-dot.done   { background: var(--sage); color: var(--white); border: 1px solid var(--sage); }
   .p-line { flex: 1; height: 1px; background: var(--border-med); transition: background 0.25s; }
   .p-line.done { background: var(--sage); }
-
   .step-heading { margin-bottom: 1.75rem; }
-  .step-heading h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 25px; font-weight: 400;
-    letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px;
-  }
+  .step-heading h1 { font-family: 'DM Serif Display', serif; font-size: 25px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px; }
   .step-heading p { font-size: 13px; color: var(--muted); line-height: 1.55; }
-
-  .field-label {
-    display: block; font-size: 11px; font-weight: 500;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 7px;
-  }
-
+  .field-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
   select {
     width: 100%; padding: 11px 36px 11px 13px;
     border: 1px solid var(--border-med); border-radius: var(--radius-sm);
@@ -86,144 +51,92 @@
     font-size: 14px; color: var(--ink); appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' fill='none'%3E%3Cpath d='M1 1l4.5 4L10 1' stroke='%238A8480' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 13px center;
-    cursor: pointer; margin-bottom: 1.5rem; transition: border-color 0.15s;
+    cursor: pointer; margin-bottom: 1.5rem;
   }
   select:focus { outline: none; border-color: var(--ink); }
-
   .upload-zone {
     border: 1.5px dashed var(--border-med); border-radius: var(--radius);
     padding: 2rem 1.5rem; text-align: center; cursor: pointer;
     background: var(--white); transition: border-color 0.15s, background 0.15s;
   }
   .upload-zone:hover { border-color: var(--blush); background: var(--blush-light); }
-  .upload-icon {
-    width: 44px; height: 44px; border: 1px solid var(--border-med);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px; background: var(--cream);
-  }
-  .upload-zone .uz-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  .upload-zone .uz-hint  { font-size: 12px; color: var(--muted); }
-
-  #preview-img {
-    width: 100%; max-height: 210px; object-fit: cover;
-    border-radius: var(--radius); margin-bottom: 10px;
-    display: none; border: 1px solid var(--border);
-  }
-
+  .upload-icon { width: 44px; height: 44px; border: 1px solid var(--border-med); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; background: var(--cream); }
+  .uz-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .uz-hint  { font-size: 12px; color: var(--muted); }
+  #preview-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: var(--radius); margin-bottom: 10px; display: none; border: 1px solid var(--border); }
   .btn-primary {
-    width: 100%; padding: 13px 20px;
-    background: var(--ink); color: var(--white);
+    width: 100%; padding: 13px 20px; background: var(--ink); color: var(--white);
     border: none; border-radius: var(--radius-sm);
     font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
     cursor: pointer; margin-top: 1rem;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.01em;
+    transition: opacity 0.15s, transform 0.1s;
   }
   .btn-primary:hover:not(:disabled) { opacity: 0.82; }
   .btn-primary:active:not(:disabled) { transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.28; cursor: not-allowed; }
-
   .btn-ghost {
-    width: 100%; padding: 11px 20px;
-    background: transparent; color: var(--muted);
+    width: 100%; padding: 11px 20px; background: transparent; color: var(--muted);
     border: 1px solid var(--border-med); border-radius: var(--radius-sm);
     font-family: 'DM Sans', sans-serif; font-size: 13px;
     cursor: pointer; margin-top: 8px; transition: background 0.15s, color 0.15s;
   }
   .btn-ghost:hover { background: var(--white); color: var(--ink); }
-
-  .spinner {
-    width: 15px; height: 15px;
-    border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff;
-    border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0;
-  }
+  .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Face overlay */
+  .photo-annotated { position: relative; margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .photo-annotated img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+  .photo-annotated canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  .zone-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Scores */
   .scores-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .score-row {
-    display: flex; align-items: center; padding: 10px 15px;
-    border-bottom: 1px solid var(--border); gap: 10px;
-  }
+  .score-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); gap: 10px; }
   .score-row:last-child { border-bottom: none; }
   .score-name  { font-size: 13px; color: var(--ink); flex: 1; }
   .score-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .score-bar-wrap { width: 64px; height: 3px; background: rgba(0,0,0,0.07); border-radius: 2px; overflow: hidden; }
   .score-bar-fill { height: 100%; border-radius: 2px; }
-  .score-num  { font-size: 12px; font-weight: 500; width: 22px; text-align: right; color: var(--ink); }
+  .score-num  { font-size: 12px; font-weight: 500; width: 22px; text-align: right; }
   .score-pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .ai-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--sage-light); color: #085041; font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 999px; margin-bottom: 1.25rem; }
 
-  .ai-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--sage-light); color: #085041;
-    font-size: 11px; font-weight: 500;
-    padding: 4px 11px; border-radius: 999px;
-    margin-bottom: 1.25rem; letter-spacing: 0.03em;
-  }
-
-  .routine-label {
-    font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 7px;
-  }
-
-  .product-card {
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 12px 14px;
-    display: flex; align-items: center; gap: 12px; margin-bottom: 5px;
-  }
-
-  .step-badge {
-    width: 34px; height: 34px; flex-shrink: 0;
-    border: 1px solid var(--border-med); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--cream);
-  }
-  .step-badge span {
-    font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
-    text-transform: uppercase; color: var(--muted); text-align: center; line-height: 1.2;
-  }
-
+  /* Regimen */
+  .routine-label { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
+  .product-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
+  .step-badge { width: 34px; height: 34px; flex-shrink: 0; border: 1px solid var(--border-med); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--cream); }
+  .step-badge span { font-size: 11px; font-weight: 500; color: var(--muted); }
   .product-info { flex: 1; min-width: 0; }
   .product-step { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
   .product-name { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .product-rule { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .product-sku  { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: monospace; }
-
-  .reasoning-card {
-    background: var(--blush-light); border: 1px solid var(--blush);
-    border-radius: var(--radius); padding: 1.1rem 1.25rem;
-    margin-top: 1.25rem; display: none;
-  }
+  .reasoning-card { background: var(--blush-light); border: 1px solid var(--blush); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-top: 1.25rem; display: none; }
   .reasoning-card h3 { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 7px; }
   .reasoning-card p  { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
-
   .rules-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 1rem; }
-
   .section-gap { margin-top: 1.5rem; }
   .fade-in { animation: fadeIn 0.25s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-
-  .error-box {
-    background: var(--coral-light); border: 1px solid rgba(226,75,74,0.18);
-    border-radius: var(--radius-sm); padding: 10px 14px;
-    font-size: 13px; color: #7A1F1F; margin-top: 10px; display: none;
-  }
+  .error-box { background: var(--coral-light); border: 1px solid rgba(226,75,74,0.18); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #7A1F1F; margin-top: 10px; display: none; }
 </style>
 </head>
 <body>
-
 <nav>
   <a href="/" class="nav-logo">LumiSkin</a>
   <a href="/admin" class="nav-link">Admin</a>
 </nav>
-
 <div class="page">
-
   <div class="progress">
     <div class="p-dot active" id="dot-1">1</div>
     <div class="p-line" id="line-1"></div>
-    <div class="p-dot idle"   id="dot-2">2</div>
+    <div class="p-dot idle" id="dot-2">2</div>
     <div class="p-line" id="line-2"></div>
-    <div class="p-dot idle"   id="dot-3">3</div>
+    <div class="p-dot idle" id="dot-3">3</div>
   </div>
 
   <!-- Step 1 -->
@@ -232,7 +145,6 @@
       <h1>Where are you shopping?</h1>
       <p>Select your market and upload a selfie — we'll analyse your skin and build a regimen tailored to you.</p>
     </div>
-
     <label class="field-label">Market</label>
     <select id="market-select" onchange="checkStep1()">
       <option value="">Select a market</option>
@@ -249,20 +161,14 @@
       <option value="MX">Mexico (MXN)</option>
       <option value="BR">Brazil (BRL)</option>
     </select>
-
     <div class="section-gap">
       <label class="field-label">Selfie</label>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
-        Face the camera straight on in natural light. No filter, no sunglasses.
-      </p>
-
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Face the camera straight on in natural light. No filter, no sunglasses.</p>
       <img id="preview-img" alt="Your selfie">
-
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
         <div class="upload-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
           </svg>
         </div>
         <div class="uz-title">Upload or take a photo</div>
@@ -270,7 +176,6 @@
       </div>
       <input type="file" id="photo-input" accept="image/*" capture="user" style="display:none" onchange="onPhotoSelected()">
     </div>
-
     <div class="error-box" id="step1-error"></div>
     <button class="btn-primary" id="btn-step1" disabled onclick="runAnalysis()">Analyse my skin</button>
   </div>
@@ -278,31 +183,32 @@
   <!-- Step 2 -->
   <div id="step2" style="display:none;">
     <div class="ai-badge">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       Claude Vision · AI scored
     </div>
-
     <div class="step-heading">
       <h1>Your skin analysis</h1>
       <p id="step2-subtitle"></p>
     </div>
 
-    <div class="scores-card" id="scores-card"></div>
+    <!-- Annotated photo -->
+    <div class="photo-annotated" id="photo-annotated">
+      <img id="annotated-img" alt="Skin analysis">
+      <canvas id="overlay-canvas"></canvas>
+    </div>
+    <div class="zone-legend" id="zone-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(226,75,74,0.7)"></div>Needs attention</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(239,159,39,0.7)"></div>Moderate</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(29,158,117,0.7)"></div>Good</div>
+    </div>
 
-    <p style="font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; display:flex; align-items:center; gap:5px;">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
+    <div class="scores-card" id="scores-card"></div>
+    <p style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;display:flex;align-items:center;gap:5px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Your scores are private and used only to build your regimen.
     </p>
-
     <button class="btn-primary" id="btn-step2" onclick="runRegimen()">Build my regimen</button>
-    <button class="btn-ghost" onclick="goBack(1)">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Retake photo
-    </button>
+    <button class="btn-ghost" onclick="goBack(1)">← Retake photo</button>
   </div>
 
   <!-- Step 3 -->
@@ -311,61 +217,48 @@
       <h1>Your regimen</h1>
       <p id="step3-subtitle"></p>
     </div>
-
     <div class="routine-label">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5">
-        <circle cx="12" cy="12" r="5"/>
-        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-      </svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       Morning
     </div>
     <div id="morning-list"></div>
-
     <div class="routine-label" style="margin-top:1.5rem;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       Night
     </div>
     <div id="night-list"></div>
-
     <div class="reasoning-card" id="reasoning-card">
       <h3>Why these products</h3>
       <p id="reasoning-text"></p>
     </div>
-
     <div class="rules-badge">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       <span id="rules-applied-text">Rules applied from Airtable</span>
     </div>
-
-    <button class="btn-ghost" style="margin-top:1.25rem;" onclick="goBack(2)">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Back to scores
-    </button>
+    <button class="btn-ghost" style="margin-top:1.25rem;" onclick="goBack(2)">← Back to scores</button>
   </div>
-
 </div>
 
 <script>
 const METRICS = [
-  ['acne',         'Acne / blemishes'],
-  ['redness',      'Redness'],
-  ['oiliness',     'Oiliness'],
-  ['moisture',     'Moisture'],
-  ['radiance',     'Radiance'],
-  ['age_spots',    'Age spots'],
-  ['texture',      'Texture'],
-  ['wrinkles',     'Wrinkles'],
-  ['dark_circles', 'Dark circles'],
-  ['firmness',     'Firmness'],
+  ['acne','Acne / blemishes'],['redness','Redness'],['oiliness','Oiliness'],
+  ['moisture','Moisture'],['radiance','Radiance'],['age_spots','Age spots'],
+  ['texture','Texture'],['wrinkles','Wrinkles'],['dark_circles','Dark circles'],['firmness','Firmness']
 ];
 
-let skinScores  = null;
-let photoBase64 = null;
-let photoType   = null;
+// Face zones: cx/cy as fraction of img width/height, rx/ry as fraction of width
+// Scores mapped per zone — uses CONCERN level (100 - flipped_score)
+const ZONE_MAP = [
+  { id:'forehead',    cx:.50, cy:.20, rx:.28, ry:.09, metrics:['oiliness','wrinkles','age_spots'] },
+  { id:'left_cheek',  cx:.27, cy:.54, rx:.15, ry:.13, metrics:['acne','redness','texture','age_spots'] },
+  { id:'right_cheek', cx:.73, cy:.54, rx:.15, ry:.13, metrics:['acne','redness','texture','age_spots'] },
+  { id:'t_zone',      cx:.50, cy:.47, rx:.07, ry:.14, metrics:['oiliness','redness'] },
+  { id:'under_eyes',  cx:.50, cy:.41, rx:.26, ry:.05, metrics:['dark_circles'] },
+  { id:'chin',        cx:.50, cy:.77, rx:.13, ry:.08, metrics:['acne','oiliness'] },
+  { id:'jawline',     cx:.50, cy:.71, rx:.28, ry:.04, metrics:['firmness'] },
+];
+
+let skinScores = null, photoBase64 = null, photoType = null, photoDataUrl = null;
 
 function onPhotoSelected() {
   const file = document.getElementById('photo-input').files[0];
@@ -373,10 +266,10 @@ function onPhotoSelected() {
   photoType = file.type || 'image/jpeg';
   const reader = new FileReader();
   reader.onload = e => {
-    photoBase64 = e.target.result.split(',')[1];
+    photoDataUrl = e.target.result;
+    photoBase64  = photoDataUrl.split(',')[1];
     const img = document.getElementById('preview-img');
-    img.src = e.target.result;
-    img.style.display = 'block';
+    img.src = photoDataUrl; img.style.display = 'block';
     document.getElementById('upload-zone').style.display = 'none';
     checkStep1();
   };
@@ -393,7 +286,6 @@ async function runAnalysis() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Analysing…';
   document.getElementById('step1-error').style.display = 'none';
-
   try {
     const res = await fetch('/analyse-skin', {
       method: 'POST',
@@ -403,44 +295,83 @@ async function runAnalysis() {
     if (!res.ok) throw new Error('Server error ' + res.status);
     skinScores = await res.json();
     renderScores(skinScores);
+    renderOverlay(skinScores);
     setStep(2);
-  } catch (err) {
+  } catch(err) {
     const box = document.getElementById('step1-error');
-    box.textContent = 'Could not analyse photo: ' + err.message + '. Please try again.';
+    box.textContent = 'Could not analyse: ' + err.message;
     box.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = 'Analyse my skin';
   }
 }
 
+function scoreColor(v) {
+  if (v >= 70) return { bar:'#1D9E75', pillBg:'#E1F5EE', pillFg:'#085041', label:'good' };
+  if (v >= 40) return { bar:'#EF9F27', pillBg:'#FAEEDA', pillFg:'#854F0B', label:'moderate' };
+  return         { bar:'#E24B4A', pillBg:'#FCEBEB', pillFg:'#A32D2D', label:'attention' };
+}
+
 function renderScores(scores) {
   const sel = document.getElementById('market-select');
-  document.getElementById('step2-subtitle').textContent =
-    sel.options[sel.selectedIndex].text + ' market';
-
+  document.getElementById('step2-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
   const card = document.getElementById('scores-card');
   card.innerHTML = '';
   METRICS.forEach(([key, label]) => {
     const v = Math.round(scores[key] ?? 50);
-    let pillBg, pillFg, barColor;
-    if      (v >= 65) { pillBg = '#FCEBEB'; pillFg = '#A32D2D'; barColor = '#E24B4A'; }
-    else if (v >= 35) { pillBg = '#FAEEDA'; pillFg = '#854F0B'; barColor = '#EF9F27'; }
-    else              { pillBg = '#E1F5EE'; pillFg = '#085041'; barColor = '#1D9E75'; }
-    const pillLabel = v >= 65 ? 'attention' : v >= 35 ? 'moderate' : 'good';
-
+    const c = scoreColor(v);
     const row = document.createElement('div');
     row.className = 'score-row fade-in';
     row.innerHTML = `
       <span class="score-name">${label}</span>
       <div class="score-right">
-        <div class="score-bar-wrap">
-          <div class="score-bar-fill" style="width:${v}%; background:${barColor};"></div>
-        </div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${v}%;background:${c.bar};"></div></div>
         <span class="score-num">${v}</span>
-        <span class="score-pill" style="background:${pillBg}; color:${pillFg};">${pillLabel}</span>
+        <span class="score-pill" style="background:${c.pillBg};color:${c.pillFg};">${c.label}</span>
       </div>`;
     card.appendChild(row);
   });
+}
+
+function renderOverlay(scores) {
+  const img = document.getElementById('annotated-img');
+  img.src = photoDataUrl;
+  img.onload = () => {
+    const canvas  = document.getElementById('overlay-canvas');
+    const W = img.offsetWidth, H = img.offsetHeight;
+    canvas.width  = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    ZONE_MAP.forEach(zone => {
+      // Average concern across zone metrics: concern = 100 - score (higher score = better skin)
+      const concerns = zone.metrics.map(m => 100 - Math.round(scores[m] ?? 50));
+      const avgConcern = concerns.reduce((a, b) => a + b, 0) / concerns.length;
+
+      let color;
+      if      (avgConcern >= 60) color = 'rgba(226,75,74,';
+      else if (avgConcern >= 35) color = 'rgba(239,159,39,';
+      else                       color = 'rgba(29,158,117,';
+
+      const alpha  = Math.min(0.45, 0.15 + avgConcern / 200);
+      const cx     = zone.cx * W;
+      const cy     = zone.cy * H;
+      const rx     = zone.rx * W;
+      const ry     = zone.ry * H;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = color + alpha + ')';
+      ctx.fill();
+
+      // Subtle border
+      ctx.strokeStyle = color + Math.min(0.7, alpha + 0.2) + ')';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    });
+  };
 }
 
 async function runRegimen() {
@@ -448,7 +379,6 @@ async function runRegimen() {
   const btn = document.getElementById('btn-step2');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Building regimen…';
-
   try {
     const res = await fetch('/recommend', {
       method: 'POST',
@@ -459,7 +389,7 @@ async function runRegimen() {
     const data = await res.json();
     renderRegimen(data);
     setStep(3);
-  } catch (err) {
+  } catch(err) {
     btn.disabled = false;
     btn.innerHTML = 'Build my regimen';
     alert('Could not load regimen: ' + err.message);
@@ -468,20 +398,18 @@ async function runRegimen() {
 
 function renderRegimen(data) {
   const sel = document.getElementById('market-select');
-  document.getElementById('step3-subtitle').textContent =
-    sel.options[sel.selectedIndex].text + ' market';
-
-  ['morning', 'night'].forEach(time => {
+  document.getElementById('step3-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
+  ['morning','night'].forEach(time => {
     const list = document.getElementById(time + '-list');
     list.innerHTML = '';
     const regimen = data[time + '_regimen'] || {};
-    let stepNum = 1;
+    let n = 1;
     Object.entries(regimen).forEach(([step, p]) => {
       if (!p || !p.product_name) return;
       const card = document.createElement('div');
       card.className = 'product-card fade-in';
       card.innerHTML = `
-        <div class="step-badge"><span>${stepNum}</span></div>
+        <div class="step-badge"><span>${n}</span></div>
         <div class="product-info">
           <div class="product-step">${step}</div>
           <div class="product-name">${p.product_name}</div>
@@ -489,36 +417,29 @@ function renderRegimen(data) {
         </div>
         <span class="product-sku">${p.sku_id || ''}</span>`;
       list.appendChild(card);
-      stepNum++;
+      n++;
     });
   });
-
   if (data.reasoning) {
     document.getElementById('reasoning-text').textContent = data.reasoning;
     document.getElementById('reasoning-card').style.display = 'block';
   }
-
   const count = (data.rules_applied || []).length;
-  document.getElementById('rules-applied-text').textContent =
-    count + ' rule' + (count !== 1 ? 's' : '') + ' applied from Airtable';
+  document.getElementById('rules-applied-text').textContent = count + ' rule' + (count !== 1 ? 's' : '') + ' applied from Airtable';
 }
 
 function setStep(n) {
-  [1, 2, 3].forEach(i => {
-    document.getElementById('step' + i).style.display = (i === n) ? 'block' : 'none';
-    const dot = document.getElementById('dot-' + i);
-    if      (i < n)   { dot.className = 'p-dot done';   dot.textContent = '✓'; }
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).style.display = (i===n) ? 'block' : 'none';
+    const dot = document.getElementById('dot-'+i);
+    if      (i < n)  { dot.className = 'p-dot done';   dot.textContent = '✓'; }
     else if (i === n) { dot.className = 'p-dot active'; dot.textContent = i; }
-    else              { dot.className = 'p-dot idle';   dot.textContent = i; }
+    else             { dot.className = 'p-dot idle';   dot.textContent = i; }
   });
   document.getElementById('line-1').className = 'p-line' + (n > 1 ? ' done' : '');
   document.getElementById('line-2').className = 'p-line' + (n > 2 ? ' done' : '');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (n === 2) {
-    const btn = document.getElementById('btn-step2');
-    btn.disabled = false;
-    btn.innerHTML = 'Build my regimen';
-  }
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if (n === 2) { const b = document.getElementById('btn-step2'); b.disabled = false; b.innerHTML = 'Build my regimen'; }
 }
 
 function goBack(to) { setStep(to); }
