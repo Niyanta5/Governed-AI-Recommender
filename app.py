@@ -33,11 +33,6 @@ EXPECTED_SKIN_KEYS = [
 
 
 def get_default_skin_scores():
-    """
-    Fallback skin scores.
-    75 means generally healthy/default state.
-    This prevents the demo from failing if Claude Vision fails.
-    """
     return {
         "acne": 75,
         "redness": 75,
@@ -55,10 +50,10 @@ def get_default_skin_scores():
 def normalize_skin_scores(raw):
     """
     Claude returns concern severity:
-    0 = no concern, 100 = severe concern
+    0 = no concern, 100 = severe concern.
 
-    Your recommendation engine expects skin health:
-    0 = poor, 100 = good
+    Recommendation engine expects health score:
+    0 = poor, 100 = good.
 
     So we flip:
     health_score = 100 - concern_score
@@ -79,12 +74,6 @@ def normalize_skin_scores(raw):
 
 
 def build_fallback_recommendation(skin_scores, market):
-    """
-    Fallback recommendation if Claude recommendation generation fails.
-    This keeps the demo usable and gives the interviewer confidence that
-    you thought about failure modes.
-    """
-
     sorted_concerns = sorted(skin_scores.items(), key=lambda item: item[1])
     weakest_concerns = [name for name, score in sorted_concerns[:3]]
 
@@ -135,7 +124,9 @@ def build_fallback_recommendation(skin_scores, market):
                 "rule_id": "fallback_rule_004",
             },
         ],
-        "rules_applied": [
+        # Keep this empty so the UI does not imply Airtable rules were applied.
+        "rules_applied": [],
+        "fallback_rules_applied": [
             "fallback_rule_001",
             "fallback_rule_002",
             "fallback_rule_003",
@@ -151,9 +142,8 @@ def build_fallback_recommendation(skin_scores, market):
 
 def normalize_recommendation_schema(recommendation):
     """
-    Converts Claude's flexible output into the exact schema expected by the frontend.
+    Converts Claude's flexible output into the frontend schema:
 
-    Expected frontend schema:
     {
       "morning": [
         {
@@ -173,17 +163,11 @@ def normalize_recommendation_schema(recommendation):
     if not isinstance(recommendation, dict):
         return recommendation
 
-    # Some Claude responses may nest routines under these keys.
     container = recommendation
 
-    for possible_container_key in [
-        "routine",
-        "regimen",
-        "recommendation",
-        "recommendations",
-    ]:
-        if isinstance(recommendation.get(possible_container_key), dict):
-            container = recommendation[possible_container_key]
+    for key in ["routine", "regimen", "recommendation", "recommendations"]:
+        if isinstance(recommendation.get(key), dict):
+            container = recommendation[key]
             break
 
     morning_raw = (
@@ -235,7 +219,6 @@ def normalize_recommendation_schema(recommendation):
             or product.get("appliedRule")
         )
 
-        # If Claude returns a list of rule IDs, use the first one for product-level rule_id.
         rule_ids = (
             product.get("rule_ids")
             or product.get("rules")
@@ -306,13 +289,12 @@ def normalize_recommendation_schema(recommendation):
     if not isinstance(rules_applied, list):
         rules_applied = [rules_applied]
 
-    # Also collect product-level rule IDs.
     for product in morning + night:
         rule_id = product.get("rule_id")
         if rule_id and rule_id not in rules_applied:
             rules_applied.append(rule_id)
 
-    normalized_response = {
+    return {
         **recommendation,
         "morning": morning,
         "night": night,
@@ -320,47 +302,44 @@ def normalize_recommendation_schema(recommendation):
         "rules_applied": rules_applied,
     }
 
-    return normalized_response
-
 
 def is_valid_recommendation(recommendation):
-    """
-    Validates the normalized recommendation schema.
-
-    After normalization, every product should have:
-    - product_name
-    - sku
-    - rule_id
-    """
-
     if not isinstance(recommendation, dict):
+        print("[VALIDATION] Recommendation is not a dict")
         return False
 
     morning = recommendation.get("morning")
     night = recommendation.get("night")
 
     if not isinstance(morning, list):
+        print("[VALIDATION] morning is missing or not a list")
         return False
 
     if not isinstance(night, list):
+        print("[VALIDATION] night is missing or not a list")
         return False
 
     if len(morning) == 0 and len(night) == 0:
+        print("[VALIDATION] both morning and night are empty")
         return False
 
     all_products = morning + night
 
-    for product in all_products:
+    for index, product in enumerate(all_products):
         if not isinstance(product, dict):
+            print(f"[VALIDATION] product {index} is not a dict")
             return False
 
         if not product.get("product_name"):
+            print(f"[VALIDATION] product {index} missing product_name: {product}")
             return False
 
         if not product.get("sku"):
+            print(f"[VALIDATION] product {index} missing sku: {product}")
             return False
 
         if not product.get("rule_id"):
+            print(f"[VALIDATION] product {index} missing rule_id: {product}")
             return False
 
     return True
@@ -503,10 +482,14 @@ def recommend():
 
     recommendation_cache_key = f"recommendation:{hash_text(recommendation_input)}"
 
-    cached_recommendation = get_cache(recommendation_cache_key)
-    if cached_recommendation is not None:
-        print(f"[CACHE HIT] /recommend returned in {time.time() - start_time:.2f}s")
-        return jsonify(cached_recommendation)
+    # IMPORTANT:
+    # Recommendation cache is temporarily disabled while debugging.
+    # Otherwise, old fallback responses may keep appearing.
+    #
+    # cached_recommendation = get_cache(recommendation_cache_key)
+    # if cached_recommendation is not None:
+    #     print(f"[CACHE HIT] /recommend returned in {time.time() - start_time:.2f}s")
+    #     return jsonify(cached_recommendation)
 
     try:
         recommendation = get_recommendation(skin_scores, market)
@@ -521,8 +504,14 @@ def recommend():
 
         if not is_valid_recommendation(recommendation):
             print("[VALIDATION FAILED] Normalized recommendation was incomplete. Using fallback.")
-            recommendation = build_fallback_recommendation(skin_scores, market)
 
+            fallback_recommendation = build_fallback_recommendation(skin_scores, market)
+            fallback_recommendation["debug_error"] = "Validation failed after schema normalization."
+
+            # Do not cache fallback while debugging.
+            return jsonify(fallback_recommendation)
+
+        # Cache only valid real recommendations.
         set_cache(recommendation_cache_key, recommendation)
 
         print(f"[CACHE MISS] /recommend completed in {time.time() - start_time:.2f}s")
@@ -533,9 +522,9 @@ def recommend():
         print(f"[FALLBACK] /recommend failed after {time.time() - start_time:.2f}s: {e}")
 
         fallback_recommendation = build_fallback_recommendation(skin_scores, market)
+        fallback_recommendation["debug_error"] = str(e)
 
-        set_cache(recommendation_cache_key, fallback_recommendation)
-
+        # Do not cache fallback while debugging.
         return jsonify(fallback_recommendation)
 
 
