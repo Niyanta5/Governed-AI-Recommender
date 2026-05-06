@@ -58,6 +58,17 @@ def health():
         "markets": len(get_market_config())
     })
 
+@app.route("/debug")
+def debug():
+    from airtable_client import get_rules, get_products
+    rules    = get_rules(market="US")
+    products = get_products(market="US")
+    return jsonify({
+        "rules_count":    len(rules),
+        "products_count": len(products),
+        "sample_rule":    rules[0] if rules else None,
+    })
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
