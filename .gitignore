@@ -47,3 +47,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+.env
+__pycache__/
+*.pyc
+.replit

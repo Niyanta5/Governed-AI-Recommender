@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LumiSkin AI — Governed Skin Recommender</title>
+  <style>
+    :root {
+      --sage: #5a8a6e;
+      --sage-lt: #edf4f0;
+      --border: #e2e8f0;
+      --muted: #6b7280;
+      --ink: #2b2b2b;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; color: var(--ink); }
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: var(--sage); }
+    .tagline { font-size: 12px; color: var(--muted); margin-left: 8px; }
+    nav { margin-left: auto; }
+    nav a { font-size: 13px; color: var(--muted); text-decoration: none; margin-left: 20px; }
+    .hero {
+      background: linear-gradient(135deg, var(--sage), #3d6b52);
+      color: white;
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .hero p { font-size: 15px; opacity: 0.88; }
+    .container { max-width: 760px; margin: 36px auto; padding: 0 20px 60px; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sage);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+    .market-select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      color: var(--ink);
+      background: var(--white);
+    }
+    .score-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 48px;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .score-label { font-size: 14px; font-weight: 500; }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--sage);
+    }
+    .score-badge {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--sage);
+      background: var(--sage-lt);
+      border-radius: 6px;
+      padding: 4px 6px;
+    }
+    .btn {
+      width: 100%;
+      background: var(--sage);
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn:hover { background: #4a7a5e; }
+    .governance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: #0369a1;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LumiSkin AI</div>
+  <div class="tagline">Governed Skin Recommender</div>
+  <nav>
+    <a href="/admin">Admin — View Rules</a>
+    <a href="/health">System Health</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Your Personalised Skin Regimen</h1>
+  <p>Powered by live Airtable business rules via MCP — no redeployment required</p>
+</div>
+
+<div class="container">
+
+  <div class="governance-badge">
+    🔒 Governed by Live Airtable Rules + Claude AI
+  </div>
+
+  <form method="POST" action="/recommend" id="skinForm">
+
+    <div class="card">
+      <div class="card-title">Select Your Market</div>
+      <select name="market" class="market-select">
+        {% for m in markets %}
+        <option value="{{ m.market_code }}">
+          {{ m.market_name }} ({{ m.currency }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your Skin Analysis Scores</div>
+
+      {% set concerns = [
+        ("acne",         "Acne / Blemishes"),
+        ("redness",      "Redness"),
+        ("oiliness",     "Oiliness"),
+        ("moisture",     "Moisture"),
+        ("radiance",     "Radiance"),
+        ("age_spots",    "Age Spots"),
+        ("texture",      "Texture"),
+        ("wrinkles",     "Wrinkles"),
+        ("dark_circles", "Dark Circles"),
+        ("firmness",     "Firmness")
+      ] %}
+
+      {% for field, label in concerns %}
+      <div class="score-row">
+        <div class="score-label">{{ label }}</div>
+        <input
+          type="range"
+          name="{{ field }}"
+          id="{{ field }}"
+          min="0" max="100" value="75"
+          oninput="update('{{ field }}', this.value)"
+        />
+        <div class="score-badge" id="badge_{{ field }}">75</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">
+      ✨ Generate My Regimen
+    </button>
+
+  </form>
+</div>
+
+<script>
+  function update(id, value) {
+    document.getElementById('badge_' + id).textContent = value;
+  }
+  document.getElementById('skinForm').addEventListener('submit', () => {
+    document.getElementById('submitBtn').textContent = '⏳ Fetching live rules via MCP...';
+    document.getElementById('submitBtn').disabled = true;
+  });
+</script>
+</body>
+</html>

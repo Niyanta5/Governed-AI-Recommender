@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LumiSkin AI — Your Regimen</title>
+  <style>
+    :root {
+      --sage: #5a8a6e;
+      --sage-lt: #edf4f0;
+      --border: #e2e8f0;
+      --muted: #6b7280;
+      --ink: #2b2b2b;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; color: var(--ink); }
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: var(--sage); }
+    nav { margin-left: auto; }
+    nav a { font-size: 13px; color: var(--muted); text-decoration: none; margin-left: 20px; }
+    .hero {
+      background: linear-gradient(135deg, var(--sage), #3d6b52);
+      color: white;
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+    .container { max-width: 860px; margin: 36px auto; padding: 0 20px 60px; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sage);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .governance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: #0369a1;
+      margin-bottom: 20px;
+    }
+    .audit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: #166534;
+      margin-bottom: 20px;
+      margin-left: 8px;
+    }
+    .regimen-slot {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .slot-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .rule-id {
+      font-size: 10px;
+      background: var(--sage-lt);
+      color: var(--sage);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .sku {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .time-header {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--sage-lt);
+    }
+    .reasoning-box {
+      background: var(--sage-lt);
+      border-left: 4px solid var(--sage);
+      border-radius: 6px;
+      padding: 16px 20px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #3a5e4a;
+    }
+    .rules-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .rule-tag {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .score-value {
+      font-weight: 600;
+      color: var(--sage);
+    }
+    .btn {
+      display: inline-block;
+      background: var(--sage);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-right: 12px;
+    }
+    .btn-outline {
+      display: inline-block;
+      background: white;
+      color: var(--sage);
+      border: 2px solid var(--sage);
+      padding: 10px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 20px;
+      color: #991b1b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LumiSkin AI</div>
+  <nav>
+    <a href="/">← New Analysis</a>
+    <a href="/admin">Admin</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Your Personalised Regimen — {{ market }} Market</h1>
+  <p>Rules fetched live from Airtable via MCP</p>
+</div>
+
+<div class="container">
+
+  {% if recommendation.get("error") %}
+  <div class="error-box">
+    ⚠️ {{ recommendation.error }}
+    <br><br>
+    <a href="/">← Try again</a>
+  </div>
+
+  {% else %}
+
+  <div>
+    <span class="governance-badge">🔒 Governed AI — Rules from Airtable</span>
+    <span class="audit-badge">✅ {{ recommendation.get("rules_applied", []) | length }} Rules Applied</span>
+  </div>
+
+  <!-- Skin Scores -->
+  <div class="card">
+    <div class="card-title">Your Skin Analysis Scores</div>
+    <div class="score-grid">
+      {% for key, value in skin_scores.items() %}
+      <div class="score-item">
+        <span>{{ key.replace("_", " ").title() }}</span>
+        <span class="score-value">{{ value | int }}/100</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Morning Regimen -->
+  <div class="card">
+    <div class="time-header">☀️ Morning Routine</div>
+    {% for slot, product in recommendation.get("morning_regimen", {}).items() %}
+    <div class="regimen-slot">
+      <div class="slot-header">
+        <div class="slot-name">{{ slot }}</div>
+        {% if product.get("rule_id") %}
+        <div class="rule-id">{{ product.rule_id }}</div>
+        {% endif %}
+      </div>
+      <div class="product-name">{{ product.get("product_name", "—") }}</div>
+      <div class="sku">SKU: {{ product.get("sku_id", "—") }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Night Regimen -->
+  <div class="card">
+    <div class="time-header">🌙 Night Routine</div>
+    {% for slot, product in recommendation.get("night_regimen", {}).items() %}
+    <div class="regimen-slot">
+      <div class="slot-header">
+        <div class="slot-name">{{ slot }}</div>
+        {% if product.get("rule_id") %}
+        <div class="rule-id">{{ product.rule_id }}</div>
+        {% endif %}
+      </div>
+      <div class="product-name">{{ product.get("product_name", "—") }}</div>
+      <div class="sku">SKU: {{ product.get("sku_id", "—") }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Claude Reasoning -->
+  <div class="card">
+    <div class="card-title">Why These Products — Claude's Reasoning</div>
+    <div class="reasoning-box">
+      {{ recommendation.get("reasoning", "No reasoning provided.") }}
+    </div>
+  </div>
+
+  <!-- Audit Trail -->
+  <div class="card">
+    <div class="card-title">Audit Trail — Rules Applied</div>
+    <div class="rules-list">
+      {% for rule_id in recommendation.get("rules_applied", []) %}
+      <span class="rule-tag">{{ rule_id }}</span>
+      {% endfor %}
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-top:12px;">
+      {{ recommendation.get("governance_note", "") }}
+    </p>
+  </div>
+
+  <div style="text-align:center; margin-top:32px;">
+    <a href="/" class="btn">← New Analysis</a>
+    <a href="/admin" class="btn-outline">View Business Rules</a>
+  </div>
+
+  {% endif %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LumiSkin AI — Admin</title>
+  <style>
+    :root {
+      --sage: #5a8a6e;
+      --sage-lt: #edf4f0;
+      --border: #e2e8f0;
+      --muted: #6b7280;
+      --ink: #2b2b2b;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f7f8fa; color: var(--ink); }
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: var(--sage); }
+    nav { margin-left: auto; }
+    nav a { font-size: 13px; color: var(--muted); text-decoration: none; margin-left: 20px; }
+    .banner {
+      background: var(--sage-lt);
+      border-bottom: 1px solid #c6dfd1;
+      padding: 12px 32px;
+      font-size: 13px;
+      color: #3a5e4a;
+    }
+    .container { max-width: 1000px; margin: 32px auto; padding: 0 20px 60px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .card-header {
+      background: var(--sage-lt);
+      padding: 14px 20px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--sage);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fafb; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-blue  { background: #dbeafe; color: #1e40af; }
+    .badge-gray  { background: #f1f5f9; color: #475569; }
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding: 20px;
+    }
+    .market-card {
+      background: var(--sage-lt);
+      border: 1px solid #c6dfd1;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .market-code { font-size: 24px; font-weight: 700; color: var(--sage); }
+    .market-name { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .market-currency { font-size: 12px; color: var(--sage); font-weight: 600; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LumiSkin AI — Admin</div>
+  <nav>
+    <a href="/">← Back to Quiz</a>
+    <a href="/health">System Health</a>
+  </nav>
+</header>
+
+<div class="banner">
+  ✅ Live Airtable connection via MCP — 
+  edit rules directly in Airtable and changes 
+  take effect on the next recommendation instantly.
+  No redeployment required.
+</div>
+
+<div class="container">
+  <h2>Business Rules Dashboard</h2>
+  <p class="subtitle">
+    These rules govern every AI recommendation. 
+    Edit them in Airtable — no engineering needed.
+  </p>
+
+  <!-- Active Markets -->
+  <div class="card">
+    <div class="card-header">
+      🌍 Active Markets ({{ markets | length }})
+    </div>
+    <div class="market-grid">
+      {% for m in markets %}
+      <div class="market-card">
+        <div class="market-code">{{ m.market_code }}</div>
+        <div class="market-name">{{ m.market_name }}</div>
+        <div class="market-currency">{{ m.currency }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="card">
+    <div class="card-header">
+      🔒 How Governed AI Works
+    </div>
+    <table>
+      <tr>
+        <th>Step</th>
+        <th>What Happens</th>
+        <th>Who Controls It</th>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">1</span></td>
+        <td>Customer submits skin scores</td>
+        <td>Customer</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">2</span></td>
+        <td>Claude fetches live rules from Airtable via MCP</td>
+        <td>Automatic</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">3</span></td>
+        <td>Rules engine applies base regimen for skin tier</td>
+        <td>Brand Manager (via Airtable)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">4</span></td>
+        <td>Focused treatment rules override base if concern is poor</td>
+        <td>Brand Manager (via Airtable)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">5</span></td>
+        <td>Priority arbitration resolves conflicting concerns</td>
+        <td>Brand Manager (via Airtable)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">6</span></td>
+        <td>Claude generates reasoning with rule IDs for audit trail</td>
+        <td>Governed by system prompt</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Airtable tables -->
+  <div class="card">
+    <div class="card-header">
+      📋 Airtable Tables — Edit These to Change AI Behaviour
+    </div>
+    <table>
+      <tr>
+        <th>Table</th>
+        <th>Purpose</th>
+        <th>Who Edits</th>
+        <th>Effect</th>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Products</span></td>
+        <td>Product catalog per market — SKU, name, description</td>
+        <td>Brand Manager</td>
+        <td>Immediate — next recommendation uses new catalog</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Business_Rules</span></td>
+        <td>When to recommend what — base regimen + overrides</td>
+        <td>Brand Manager</td>
+        <td>Immediate — no redeployment needed</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Concern_Priority</span></td>
+        <td>Which concern wins when multiple are poor</td>
+        <td>Brand Manager</td>
+        <td>Immediate — arbitration logic updated instantly</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Market_Config</span></td>
+        <td>Active markets, currency — add new markets here</td>
+        <td>Brand Manager</td>
+        <td>Immediate — new market appears in dropdown</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>
