@@ -1,7 +1,7 @@
 import time
 import hashlib
 
-CACHE_TTL_SECONDS = 600
+CACHE_TTL_SECONDS = 600  # 10 minutes
 
 _cache = {}
 
