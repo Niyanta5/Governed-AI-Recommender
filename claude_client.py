@@ -22,9 +22,10 @@ YOUR RULES:
 5. NEVER override a business rule — you can only explain one
 6. If two concerns conflict, use get_concern_priority to determine which wins
 7. ALWAYS return valid JSON — no exceptions
+8. Do NOT wrap your JSON in markdown code fences — return raw JSON only
 
 OUTPUT FORMAT:
-You must return a JSON object with exactly this structure:
+You must return a raw JSON object with exactly this structure (no markdown, no code fences):
 {
     "overall_tier": "average",
     "priority_concern": "acne",
@@ -45,9 +46,37 @@ You must return a JSON object with exactly this structure:
     "confidence": 0.95
 }"""
 
+
+def clean_json(text):
+    """
+    Robustly extract JSON from Claude's response.
+    Handles: raw JSON, ```json fences, ``` fences, leading text before JSON.
+    """
+    text = text.strip()
+
+    # Remove markdown code fences
+    if "```" in text:
+        parts = text.split("```")
+        for part in parts:
+            part = part.strip()
+            if part.startswith("json"):
+                part = part[4:].strip()
+            if part.startswith("{"):
+                text = part
+                break
+
+    # Find JSON object if there's leading text
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1:
+        text = text[start:end+1]
+
+    return text
+
+
 def get_recommendation(skin_scores, market):
 
-  user_message = f"""
+    user_message = f"""
 Please recommend a skincare regimen for this customer.
 
 MARKET: {market}
@@ -72,47 +101,56 @@ INSTRUCTIONS:
 5. Apply base regimen for that tier
 6. Check if any focused treatment rules apply
 7. Use concern priority if multiple concerns need attention
-8. Return your recommendation as JSON
+8. Return ONLY raw JSON — no markdown, no explanation outside the JSON
 """
 
-  messages = [{"role": "user", "content": user_message}]
+    messages = [{"role": "user", "content": user_message}]
 
-  while True:
-      response = client.messages.create(
-          model=MODEL,
-          max_tokens=4096,
-          system=SYSTEM_PROMPT,
-          tools=TOOLS,
-          messages=messages
-      )
+    while True:
+        try:
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=4096,
+                system=SYSTEM_PROMPT,
+                tools=TOOLS,
+                messages=messages
+            )
+        except Exception as e:
+            return {"error": f"Claude API error: {str(e)}"}
 
-      if response.stop_reason == "tool_use":
-          tool_results = []
-          for block in response.content:
-              if block.type == "tool_use":
-                  result = execute_tool(block.name, block.input)
-                  tool_results.append({
-                      "type": "tool_result",
-                      "tool_use_id": block.id,
-                      "content": result
-                  })
+        if response.stop_reason == "tool_use":
+            tool_results = []
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = execute_tool(block.name, block.input)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": result
+                    })
 
-          messages.append({
-              "role": "assistant",
-              "content": response.content
-          })
-          messages.append({
-              "role": "user",
-              "content": tool_results
-          })
+            messages.append({
+                "role": "assistant",
+                "content": response.content
+            })
+            messages.append({
+                "role": "user",
+                "content": tool_results
+            })
 
-      elif response.stop_reason == "end_turn":
-          for block in response.content:
-              if hasattr(block, "text"):
-                  try:
-                      return json.loads(block.text)
-                  except json.JSONDecodeError:
-                      return {"error": "Invalid JSON from Claude"}
-          break
+        elif response.stop_reason == "end_turn":
+            for block in response.content:
+                if hasattr(block, "text"):
+                    try:
+                        cleaned = clean_json(block.text)
+                        return json.loads(cleaned)
+                    except json.JSONDecodeError as e:
+                        # Return first 500 chars for debugging
+                        preview = block.text[:500] if block.text else "empty"
+                        return {
+                            "error": f"Could not parse Claude response: {str(e)}",
+                            "raw_preview": preview
+                        }
+            break
 
-  return {"error": "No recommendation generated"}
+    return {"error": "No recommendation generated"}
