@@ -1,7 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
-
+from cache import get_cache, set_cache
 load_dotenv()
 
 AIRTABLE_TOKEN = os.getenv("AIRTABLE_TOKEN")
@@ -29,32 +29,84 @@ def fetch_table(table_name):
   return [r["fields"] for r in records]
 
 def get_products(market=None):
-  products = fetch_table("Products")
-  if market:
-      products = [p for p in products 
-                 if p.get("market") == market 
-                 or p.get("market") == "ALL"]
-  return [p for p in products 
-          if p.get("status") == "Active"]
+    def get_products(market):
+        cache_key = f"products:{market}"
+
+        cached = get_cache(cache_key)
+        if cached is not None:
+            return cached
+
+        records = fetch_table("Products")
+
+        products = []
+        for record in records:
+            fields = record.get("fields", {})
+
+            if fields.get("Status") != "Active":
+                continue
+
+            product_market = fields.get("Market")
+
+            if product_market not in [market, "ALL"]:
+                continue
+
+            products.append(fields)
+
+        set_cache(cache_key, products)
+        return products
 
 
 def get_rules(market=None):
-  rules = fetch_table("Business_Rules")
-  if market:
-      rules = [r for r in rules 
-              if r.get("market") == market 
-              or r.get("market") == "ALL"]
-  return [r for r in rules 
-          if r.get("is_active") == True]
+    def get_rules(market):
+        cache_key = f"rules:{market}"
+
+        cached = get_cache(cache_key)
+        if cached is not None:
+            return cached
+
+        records = fetch_table("Business_Rules")
+
+        rules = []
+        for record in records:
+            fields = record.get("fields", {})
+
+            if fields.get("Active") is not True:
+                continue
+
+            rule_market = fields.get("Market")
+
+            if rule_market not in [market, "ALL"]:
+                continue
+
+            rules.append(fields)
+
+        set_cache(cache_key, rules)
+        return rules
 
 
 def get_concern_priority(market=None):
-  priority = fetch_table("Concern_Priority")
-  if market:
-      priority = [p for p in priority 
-                 if p.get("market") == market 
-                 or p.get("market") == "ALL"]
-  return priority
+    def get_concern_priority(market):
+        cache_key = f"concern_priority:{market}"
+
+        cached = get_cache(cache_key)
+        if cached is not None:
+            return cached
+
+        records = fetch_table("Concern_Priority")
+
+        priorities = []
+        for record in records:
+            fields = record.get("fields", {})
+
+            priority_market = fields.get("Market")
+
+            if priority_market not in [market, "ALL"]:
+                continue
+
+            priorities.append(fields)
+
+        set_cache(cache_key, priorities)
+        return priorities
 
 
 def get_market_config():
