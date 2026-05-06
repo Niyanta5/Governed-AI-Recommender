@@ -124,7 +124,6 @@ def build_fallback_recommendation(skin_scores, market):
                 "rule_id": "fallback_rule_004",
             },
         ],
-        # Keep this empty so the UI does not imply Airtable rules were applied.
         "rules_applied": [],
         "fallback_rules_applied": [
             "fallback_rule_001",
@@ -141,25 +140,6 @@ def build_fallback_recommendation(skin_scores, market):
 
 
 def normalize_recommendation_schema(recommendation):
-    """
-    Converts Claude's flexible output into the frontend schema:
-
-    {
-      "morning": [
-        {
-          "slot": "...",
-          "product_name": "...",
-          "sku": "...",
-          "reason": "...",
-          "rule_id": "..."
-        }
-      ],
-      "night": [...],
-      "reasoning": "...",
-      "rules_applied": [...]
-    }
-    """
-
     if not isinstance(recommendation, dict):
         return recommendation
 
@@ -379,6 +359,8 @@ def analyse_skin():
     if not image_b64:
         return jsonify({"error": "Missing image"}), 400
 
+    print(f"[IMAGE] base64 length: {len(image_b64)} characters")
+
     image_cache_key = f"skin_analysis:{hash_text(image_b64)}"
 
     cached_result = get_cache(image_cache_key)
@@ -390,8 +372,9 @@ def analyse_skin():
 
     try:
         message = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=300,
+            # Faster/cheaper than Opus for this structured scoring task
+            model=os.getenv("SKIN_ANALYSIS_MODEL", "claude-sonnet-4-5"),
+            max_tokens=250,
             messages=[
                 {
                     "role": "user",
@@ -407,9 +390,11 @@ def analyse_skin():
                         {
                             "type": "text",
                             "text": (
-                                "You are a skincare analyst. Score each skin concern "
-                                "0-100 where 0 = no concern at all, 100 = severe concern. "
-                                "Return ONLY raw JSON, no markdown, no explanation:\n"
+                                "You are a skincare image scoring assistant for a demo. "
+                                "Score each visible skin concern from 0-100 where "
+                                "0 = no visible concern and 100 = severe visible concern. "
+                                "Return ONLY raw JSON. No markdown. No explanation. "
+                                "Use exactly these keys:\n"
                                 '{"acne":0,"redness":0,"oiliness":0,'
                                 '"moisture":0,"radiance":0,"age_spots":0,'
                                 '"texture":0,"wrinkles":0,"dark_circles":0,'
@@ -432,7 +417,7 @@ def analyse_skin():
 
         set_cache(image_cache_key, flipped)
 
-        print(f"[CACHE MISS] /analyse-skin Claude call completed in {time.time() - start_time:.2f}s")
+        print(f"[CACHE MISS] /analyse-skin completed in {time.time() - start_time:.2f}s")
 
         return jsonify(flipped)
 
@@ -448,6 +433,7 @@ def analyse_skin():
                 **fallback_scores,
                 "fallback": True,
                 "message": "Skin analysis fallback used because AI vision analysis failed.",
+                "debug_error": str(e),
             }
         )
 
@@ -482,9 +468,8 @@ def recommend():
 
     recommendation_cache_key = f"recommendation:{hash_text(recommendation_input)}"
 
-    # IMPORTANT:
-    # Recommendation cache is temporarily disabled while debugging.
-    # Otherwise, old fallback responses may keep appearing.
+    # Still disabled while debugging fallback/schema issues.
+    # Turn this back on only after real recommendations render correctly.
     #
     # cached_recommendation = get_cache(recommendation_cache_key)
     # if cached_recommendation is not None:
@@ -508,10 +493,8 @@ def recommend():
             fallback_recommendation = build_fallback_recommendation(skin_scores, market)
             fallback_recommendation["debug_error"] = "Validation failed after schema normalization."
 
-            # Do not cache fallback while debugging.
             return jsonify(fallback_recommendation)
 
-        # Cache only valid real recommendations.
         set_cache(recommendation_cache_key, recommendation)
 
         print(f"[CACHE MISS] /recommend completed in {time.time() - start_time:.2f}s")
@@ -524,7 +507,6 @@ def recommend():
         fallback_recommendation = build_fallback_recommendation(skin_scores, market)
         fallback_recommendation["debug_error"] = str(e)
 
-        # Do not cache fallback while debugging.
         return jsonify(fallback_recommendation)
 
 

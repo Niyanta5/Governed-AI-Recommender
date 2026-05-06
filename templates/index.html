@@ -1,511 +1,610 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LumiSkin AI — Personalised Skin Regimen</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --cream: #FAF8F5; --white: #FFFFFF;
-    --blush: #E8D5CC; --blush-light: #FDF5F2;
-    --sage: #1D9E75; --sage-light: #E1F5EE;
-    --coral-light: #FCEBEB;
-    --ink: #1A1A1A; --ink-soft: #2E2E2E; --muted: #8A8480;
-    --border: rgba(0,0,0,0.07); --border-med: rgba(0,0,0,0.11);
-    --radius: 16px; --radius-sm: 10px;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
-  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); text-decoration: none; }
-  .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; }
-  .nav-link:hover { color: var(--ink); }
-  .page { max-width: 500px; margin: 0 auto; padding: 2.25rem 1.25rem 5rem; }
-  .progress { display: flex; align-items: center; margin-bottom: 2.5rem; }
-  .p-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; transition: background 0.25s, color 0.25s; }
-  .p-dot.idle   { background: var(--white); border: 1px solid var(--border-med); color: var(--muted); }
-  .p-dot.active { background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
-  .p-dot.done   { background: var(--sage); color: var(--white); border: 1px solid var(--sage); }
-  .p-line { flex: 1; height: 1px; background: var(--border-med); transition: background 0.25s; }
-  .p-line.done { background: var(--sage); }
-  .step-heading { margin-bottom: 1.75rem; }
-  .step-heading h1 { font-family: 'DM Serif Display', serif; font-size: 25px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px; }
-  .step-heading p { font-size: 13px; color: var(--muted); line-height: 1.55; }
-  .field-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
-  select { width: 100%; padding: 11px 36px 11px 13px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' fill='none'%3E%3Cpath d='M1 1l4.5 4L10 1' stroke='%238A8480' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; cursor: pointer; margin-bottom: 1.5rem; }
-  select:focus { outline: none; border-color: var(--ink); }
-
-  /* Photo area */
-  .photo-area { margin-bottom: 1rem; }
-  .upload-zone { border: 1.5px dashed var(--border-med); border-radius: var(--radius); padding: 1.75rem 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: border-color 0.15s, background 0.15s; }
-  .upload-zone:hover { border-color: var(--blush); background: var(--blush-light); }
-  .upload-icon { width: 44px; height: 44px; border: 1px solid var(--border-med); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; background: var(--cream); }
-  .uz-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  .uz-hint  { font-size: 12px; color: var(--muted); }
-  .photo-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
-  .opt-btn { padding: 11px 12px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.15s, border-color 0.15s; }
-  .opt-btn:hover { background: var(--blush-light); border-color: var(--blush); }
-
-  /* Preview */
-  .preview-wrap { position: relative; margin-bottom: 8px; }
-  #preview-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--radius); display: none; border: 1px solid var(--border); }
-  #camera-stream { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--radius); display: none; border: 1px solid var(--border); background: #000; }
-  .change-photo-btn { display: none; margin-top: 8px; width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-med); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted); cursor: pointer; transition: background 0.15s; }
-  .change-photo-btn:hover { background: var(--white); color: var(--ink); }
-  #capture-btn { display: none; width: 100%; padding: 12px; background: var(--ink); color: var(--white); border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
-
-  /* Buttons */
-  .btn-primary { width: 100%; padding: 13px 20px; background: var(--ink); color: var(--white); border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s, transform 0.1s; }
-  .btn-primary:hover:not(:disabled) { opacity: 0.82; }
-  .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-  .btn-primary:disabled { opacity: 0.28; cursor: not-allowed; }
-  .btn-ghost { width: 100%; padding: 11px 20px; background: transparent; color: var(--muted); border: 1px solid var(--border-med); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; margin-top: 8px; transition: background 0.15s, color 0.15s; }
-  .btn-ghost:hover { background: var(--white); color: var(--ink); }
-  .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Step 2 */
-  .ai-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--sage-light); color: #085041; font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 999px; margin-bottom: 1.25rem; }
-
-  /* Face map + photo row */
-  .analysis-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; align-items: start; }
-  .photo-thumb { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-  .photo-thumb img { width: 100%; display: block; max-height: 220px; object-fit: cover; }
-  .face-map-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
-  .face-map-label { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .face-map-svg { width: 100%; }
-  .zone-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
-  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-
-  /* Scores */
-  .scores-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .score-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); gap: 10px; }
-  .score-row:last-child { border-bottom: none; }
-  .score-name  { font-size: 13px; color: var(--ink); flex: 1; }
-  .score-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .score-bar-wrap { width: 64px; height: 3px; background: rgba(0,0,0,0.07); border-radius: 2px; overflow: hidden; }
-  .score-bar-fill { height: 100%; border-radius: 2px; }
-  .score-num  { font-size: 12px; font-weight: 500; width: 22px; text-align: right; }
-  .score-pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-
-  /* Regimen */
-  .routine-label { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
-  .product-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
-  .step-badge { width: 34px; height: 34px; flex-shrink: 0; border: 1px solid var(--border-med); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--cream); }
-  .step-badge span { font-size: 11px; font-weight: 500; color: var(--muted); }
-  .product-info { flex: 1; min-width: 0; }
-  .product-step { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
-  .product-name { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .product-rule { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .product-sku  { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: monospace; }
-  .reasoning-card { background: var(--blush-light); border: 1px solid var(--blush); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-top: 1.25rem; display: none; }
-  .reasoning-card h3 { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 7px; }
-  .reasoning-card p  { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
-  .rules-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 1rem; }
-  .section-gap { margin-top: 1.5rem; }
-  .fade-in { animation: fadeIn 0.25s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-  .error-box { background: var(--coral-light); border: 1px solid rgba(226,75,74,0.18); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #7A1F1F; margin-top: 10px; display: none; }
-
-  @media (max-width: 420px) {
-    .analysis-visual { grid-template-columns: 1fr; }
-  }
-</style>
-</head>
-<body>
-<nav>
-  <a href="/" class="nav-logo">LumiSkin</a>
-  <a href="/admin" class="nav-link">Admin</a>
-</nav>
-<div class="page">
-  <div class="progress">
-    <div class="p-dot active" id="dot-1">1</div>
-    <div class="p-line" id="line-1"></div>
-    <div class="p-dot idle" id="dot-2">2</div>
-    <div class="p-line" id="line-2"></div>
-    <div class="p-dot idle" id="dot-3">3</div>
-  </div>
-
-  <!-- Step 1 -->
-  <div id="step1">
-    <div class="step-heading">
-      <h1>Where are you shopping?</h1>
-      <p>Select your market and upload a selfie — we'll analyse your skin and build a regimen tailored to you.</p>
-    </div>
-
-    <label class="field-label">Market</label>
-    <select id="market-select" onchange="checkStep1()">
-      <option value="">Select a market</option>
-      <option value="US">United States (USD)</option>
-      <option value="UK">United Kingdom (GBP)</option>
-      <option value="CA">Canada (CAD)</option>
-    </select>
-
-    <div class="section-gap">
-      <label class="field-label">Selfie</label>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
-        Face the camera straight on in natural light. No filter, no sunglasses.
-      </p>
-
-      <div class="preview-wrap">
-        <img id="preview-img" alt="Your selfie">
-        <video id="camera-stream" autoplay playsinline></video>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>LumiSkin AI — Personalised Skin Regimen</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+      <style>
+         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+         :root {
+         --cream: #FAF8F5; --white: #FFFFFF;
+         --blush: #E8D5CC; --blush-light: #FDF5F2;
+         --sage: #1D9E75; --sage-light: #E1F5EE;
+         --coral-light: #FCEBEB;
+         --ink: #1A1A1A; --ink-soft: #2E2E2E; --muted: #8A8480;
+         --border: rgba(0,0,0,0.07); --border-med: rgba(0,0,0,0.11);
+         --radius: 16px; --radius-sm: 10px;
+         }
+         body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+         nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+         .nav-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); text-decoration: none; }
+         .nav-link { font-size: 12px; color: var(--muted); text-decoration: none; }
+         .nav-link:hover { color: var(--ink); }
+         .page { max-width: 500px; margin: 0 auto; padding: 2.25rem 1.25rem 5rem; }
+         .progress { display: flex; align-items: center; margin-bottom: 2.5rem; }
+         .p-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; transition: background 0.25s, color 0.25s; }
+         .p-dot.idle   { background: var(--white); border: 1px solid var(--border-med); color: var(--muted); }
+         .p-dot.active { background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
+         .p-dot.done   { background: var(--sage); color: var(--white); border: 1px solid var(--sage); }
+         .p-line { flex: 1; height: 1px; background: var(--border-med); transition: background 0.25s; }
+         .p-line.done { background: var(--sage); }
+         .step-heading { margin-bottom: 1.75rem; }
+         .step-heading h1 { font-family: 'DM Serif Display', serif; font-size: 25px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px; }
+         .step-heading p { font-size: 13px; color: var(--muted); line-height: 1.55; }
+         .field-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+         select { width: 100%; padding: 11px 36px 11px 13px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' fill='none'%3E%3Cpath d='M1 1l4.5 4L10 1' stroke='%238A8480' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; cursor: pointer; margin-bottom: 1.5rem; }
+         select:focus { outline: none; border-color: var(--ink); }
+         /* Photo area */
+         .photo-area { margin-bottom: 1rem; }
+         .upload-zone { border: 1.5px dashed var(--border-med); border-radius: var(--radius); padding: 1.75rem 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: border-color 0.15s, background 0.15s; }
+         .upload-zone:hover { border-color: var(--blush); background: var(--blush-light); }
+         .upload-icon { width: 44px; height: 44px; border: 1px solid var(--border-med); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; background: var(--cream); }
+         .uz-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+         .uz-hint  { font-size: 12px; color: var(--muted); }
+         .photo-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+         .opt-btn { padding: 11px 12px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.15s, border-color 0.15s; }
+         .opt-btn:hover { background: var(--blush-light); border-color: var(--blush); }
+         /* Preview */
+         .preview-wrap { position: relative; margin-bottom: 8px; }
+         #preview-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--radius); display: none; border: 1px solid var(--border); }
+         #camera-stream { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--radius); display: none; border: 1px solid var(--border); background: #000; }
+         .change-photo-btn { display: none; margin-top: 8px; width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-med); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted); cursor: pointer; transition: background 0.15s; }
+         .change-photo-btn:hover { background: var(--white); color: var(--ink); }
+         #capture-btn { display: none; width: 100%; padding: 12px; background: var(--ink); color: var(--white); border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+         /* Buttons */
+         .btn-primary { width: 100%; padding: 13px 20px; background: var(--ink); color: var(--white); border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s, transform 0.1s; }
+         .btn-primary:hover:not(:disabled) { opacity: 0.82; }
+         .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+         .btn-primary:disabled { opacity: 0.28; cursor: not-allowed; }
+         .btn-ghost { width: 100%; padding: 11px 20px; background: transparent; color: var(--muted); border: 1px solid var(--border-med); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; margin-top: 8px; transition: background 0.15s, color 0.15s; }
+         .btn-ghost:hover { background: var(--white); color: var(--ink); }
+         .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0; }
+         @keyframes spin { to { transform: rotate(360deg); } }
+         /* Step 2 */
+         .ai-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--sage-light); color: #085041; font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 999px; margin-bottom: 1.25rem; }
+         /* Face map + photo row */
+         .analysis-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; align-items: start; }
+         .photo-thumb { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+         .photo-thumb img { width: 100%; display: block; max-height: 220px; object-fit: cover; }
+         .face-map-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+         .face-map-label { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+         .face-map-svg { width: 100%; }
+         .zone-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+         .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+         .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+         /* Scores */
+         .scores-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+         .score-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); gap: 10px; }
+         .score-row:last-child { border-bottom: none; }
+         .score-name  { font-size: 13px; color: var(--ink); flex: 1; }
+         .score-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+         .score-bar-wrap { width: 64px; height: 3px; background: rgba(0,0,0,0.07); border-radius: 2px; overflow: hidden; }
+         .score-bar-fill { height: 100%; border-radius: 2px; }
+         .score-num  { font-size: 12px; font-weight: 500; width: 22px; text-align: right; }
+         .score-pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+         /* Regimen */
+         .routine-label { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
+         .product-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
+         .step-badge { width: 34px; height: 34px; flex-shrink: 0; border: 1px solid var(--border-med); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--cream); }
+         .step-badge span { font-size: 11px; font-weight: 500; color: var(--muted); }
+         .product-info { flex: 1; min-width: 0; }
+         .product-step { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
+         .product-name { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+         .product-rule { font-size: 11px; color: var(--muted); margin-top: 1px; }
+         .product-sku  { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: monospace; }
+         .reasoning-card { background: var(--blush-light); border: 1px solid var(--blush); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-top: 1.25rem; display: none; }
+         .reasoning-card h3 { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 7px; }
+         .reasoning-card p  { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
+         .rules-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 1rem; }
+         .section-gap { margin-top: 1.5rem; }
+         .fade-in { animation: fadeIn 0.25s ease; }
+         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+         .error-box { background: var(--coral-light); border: 1px solid rgba(226,75,74,0.18); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #7A1F1F; margin-top: 10px; display: none; }
+         @media (max-width: 420px) {
+         .analysis-visual { grid-template-columns: 1fr; }
+         }
+      </style>
+   </head>
+   <body>
+      <nav>
+         <a href="/" class="nav-logo">LumiSkin</a>
+         <a href="/admin" class="nav-link">Admin</a>
+      </nav>
+      <div class="page">
+         <div class="progress">
+            <div class="p-dot active" id="dot-1">1</div>
+            <div class="p-line" id="line-1"></div>
+            <div class="p-dot idle" id="dot-2">2</div>
+            <div class="p-line" id="line-2"></div>
+            <div class="p-dot idle" id="dot-3">3</div>
+         </div>
+         <!-- Step 1 -->
+         <div id="step1">
+            <div class="step-heading">
+               <h1>Where are you shopping?</h1>
+               <p>Select your market and upload a selfie — we'll analyse your skin and build a regimen tailored to you.</p>
+            </div>
+            <label class="field-label">Market</label>
+            <select id="market-select" onchange="checkStep1()">
+               <option value="">Select a market</option>
+               <option value="US">United States (USD)</option>
+               <option value="UK">United Kingdom (GBP)</option>
+               <option value="CA">Canada (CAD)</option>
+            </select>
+            <div class="section-gap">
+               <label class="field-label">Selfie</label>
+               <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+                  Face the camera straight on in natural light. No filter, no sunglasses.
+               </p>
+               <div class="preview-wrap">
+                  <img id="preview-img" alt="Your selfie">
+                  <video id="camera-stream" autoplay playsinline></video>
+               </div>
+               <button class="change-photo-btn" id="change-btn" onclick="resetPhoto()">
+               ↩ Change photo
+               </button>
+               <canvas id="capture-btn" style="display:none"></canvas>
+               <button id="snap-btn" style="display:none;" onclick="snapPhoto()" class="btn-primary" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                     <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Take photo
+               </button>
+               <!-- Upload options shown before photo -->
+               <div class="photo-options" id="photo-options">
+                  <button class="opt-btn" onclick="document.getElementById('photo-input').click()">
+                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                     </svg>
+                     Upload photo
+                  </button>
+                  <button class="opt-btn" id="camera-btn" onclick="startCamera()">
+                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                     </svg>
+                     Use camera
+                  </button>
+               </div>
+               <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelected()">
+            </div>
+            <div class="error-box" id="step1-error"></div>
+            <button class="btn-primary" id="btn-step1" disabled onclick="runAnalysis()">Analyse my skin</button>
+         </div>
+         <!-- Step 2 -->
+         <div id="step2" style="display:none;">
+            <div class="ai-badge">
+               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+               </svg>
+               Claude Vision · AI scored
+            </div>
+            <div class="step-heading">
+               <h1>Your skin analysis</h1>
+               <p id="step2-subtitle"></p>
+            </div>
+            <!-- Photo + face map side by side -->
+            <div class="analysis-visual">
+               <div class="photo-thumb">
+                  <img id="thumb-img" alt="Your selfie">
+               </div>
+               <div class="face-map-wrap">
+                  <div class="face-map-label">Skin map</div>
+                  <svg class="face-map-svg" viewBox="0 0 120 160" fill="none" xmlns="http://www.w3.org/2000/svg" id="face-svg">
+                     <!-- Forehead -->
+                     <ellipse id="z-forehead" cx="60" cy="34" rx="28" ry="14" opacity="0.7"/>
+                     <!-- Left cheek -->
+                     <ellipse id="z-left-cheek" cx="28" cy="85" rx="16" ry="18" opacity="0.7"/>
+                     <!-- Right cheek -->
+                     <ellipse id="z-right-cheek" cx="92" cy="85" rx="16" ry="18" opacity="0.7"/>
+                     <!-- Nose / T-zone -->
+                     <ellipse id="z-tzone" cx="60" cy="76" rx="8" ry="18" opacity="0.7"/>
+                     <!-- Under eyes -->
+                     <ellipse id="z-undereyes" cx="60" cy="63" rx="26" ry="6" opacity="0.7"/>
+                     <!-- Chin -->
+                     <ellipse id="z-chin" cx="60" cy="118" rx="16" ry="10" opacity="0.7"/>
+                     <!-- Jawline -->
+                     <ellipse id="z-jawline" cx="60" cy="110" rx="30" ry="5" opacity="0.6"/>
+                     <!-- Face outline -->
+                     <path d="M60 8 C34 8 22 28 22 52 C22 80 30 102 44 114 C50 120 56 128 60 132 C64 128 70 120 76 114 C90 102 98 80 98 52 C98 28 86 8 60 8 Z" stroke="#D0CBC5" stroke-width="1.5" fill="none"/>
+                     <!-- Eyes suggestion -->
+                     <ellipse cx="42" cy="62" rx="8" ry="5" fill="#E8E2DC" opacity="0.8"/>
+                     <ellipse cx="78" cy="62" rx="8" ry="5" fill="#E8E2DC" opacity="0.8"/>
+                     <!-- Labels -->
+                     <text x="60" y="31" text-anchor="middle" font-size="7" fill="#8A8480" font-family="DM Sans, sans-serif">Forehead</text>
+                     <text x="60" y="101" text-anchor="middle" font-size="7" fill="#8A8480" font-family="DM Sans, sans-serif">Chin</text>
+                  </svg>
+               </div>
+            </div>
+            <div class="zone-legend">
+               <div class="legend-item">
+                  <div class="legend-dot" style="background:#E24B4A;"></div>
+                  Needs attention
+               </div>
+               <div class="legend-item">
+                  <div class="legend-dot" style="background:#EF9F27;"></div>
+                  Moderate
+               </div>
+               <div class="legend-item">
+                  <div class="legend-dot" style="background:#1D9E75;"></div>
+                  Good
+               </div>
+            </div>
+            <div class="scores-card" id="scores-card"></div>
+            <p style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;display:flex;align-items:center;gap:5px;">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+               </svg>
+               Your scores are private and used only to build your regimen.
+            </p>
+            <button class="btn-primary" id="btn-step2" onclick="runRegimen()">Build my regimen</button>
+            <button class="btn-ghost" onclick="goBack(1)">← Retake photo</button>
+         </div>
+         <!-- Step 3 -->
+         <div id="step3" style="display:none;">
+            <div class="step-heading">
+               <h1>Your regimen</h1>
+               <p id="step3-subtitle"></p>
+            </div>
+            <div class="routine-label">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5">
+                  <circle cx="12" cy="12" r="5"/>
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+               </svg>
+               Morning
+            </div>
+            <div id="morning-list"></div>
+            <div class="routine-label" style="margin-top:1.5rem;">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+               </svg>
+               Night
+            </div>
+            <div id="night-list"></div>
+            <div class="reasoning-card" id="reasoning-card">
+               <h3>Why these products</h3>
+               <p id="reasoning-text"></p>
+            </div>
+            <div class="rules-badge">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+               </svg>
+               <span id="rules-applied-text">Rules applied from Airtable</span>
+            </div>
+            <button class="btn-ghost" style="margin-top:1.25rem;" onclick="goBack(2)">← Back to scores</button>
+         </div>
       </div>
+      <script>
+         const METRICS = [
+           ['acne','Acne / blemishes'],['redness','Redness'],['oiliness','Oiliness'],
+           ['moisture','Moisture'],['radiance','Radiance'],['age_spots','Age spots'],
+           ['texture','Texture'],['wrinkles','Wrinkles'],['dark_circles','Dark circles'],['firmness','Firmness']
+         ];
 
-      <button class="change-photo-btn" id="change-btn" onclick="resetPhoto()">
-        ↩ Change photo
-      </button>
+         // Map each SVG zone id to which metrics drive its colour
+         const ZONE_METRICS = {
+           'z-forehead':    ['oiliness','wrinkles','age_spots'],
+           'z-left-cheek':  ['acne','redness','texture','age_spots'],
+           'z-right-cheek': ['acne','redness','texture','age_spots'],
+           'z-tzone':       ['oiliness','redness'],
+           'z-undereyes':   ['dark_circles'],
+           'z-chin':        ['acne','oiliness'],
+           'z-jawline':     ['firmness'],
+         };
 
-      <canvas id="capture-btn" style="display:none"></canvas>
-      <button id="snap-btn" style="display:none;" onclick="snapPhoto()" class="btn-primary" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Take photo
-      </button>
+         let skinScores = null, photoBase64 = null, photoType = null, photoDataUrl = null;
+         let cameraStream = null;
 
-      <!-- Upload options shown before photo -->
-      <div class="photo-options" id="photo-options">
-        <button class="opt-btn" onclick="document.getElementById('photo-input').click()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload photo
-        </button>
-        <button class="opt-btn" id="camera-btn" onclick="startCamera()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Use camera
-        </button>
-      </div>
-      <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelected()">
-    </div>
+         // ── Camera ──────────────────────────────────────────────
+         async function startCamera() {
+           try {
+             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+             cameraStream = stream;
+             const video = document.getElementById('camera-stream');
+             video.srcObject = stream;
+             video.style.display = 'block';
+             document.getElementById('photo-options').style.display = 'none';
+             document.getElementById('snap-btn').style.display = 'flex';
+           } catch(err) {
+             // Camera denied — fall back to file upload
+             document.getElementById('photo-input').click();
+           }
+         }
 
-    <div class="error-box" id="step1-error"></div>
-    <button class="btn-primary" id="btn-step1" disabled onclick="runAnalysis()">Analyse my skin</button>
-  </div>
+         function snapPhoto() {
+           const video  = document.getElementById('camera-stream');
+           const canvas = document.createElement('canvas');
+           canvas.width  = video.videoWidth;
+           canvas.height = video.videoHeight;
+           canvas.getContext('2d').drawImage(video, 0, 0);
+           photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+           photoBase64  = photoDataUrl.split(',')[1];
+           photoType    = 'image/jpeg';
+           stopCamera();
+           showPreview(photoDataUrl);
+         }
 
-  <!-- Step 2 -->
-  <div id="step2" style="display:none;">
-    <div class="ai-badge">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Claude Vision · AI scored
-    </div>
-    <div class="step-heading">
-      <h1>Your skin analysis</h1>
-      <p id="step2-subtitle"></p>
-    </div>
+         function stopCamera() {
+           if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+           document.getElementById('camera-stream').style.display = 'none';
+           document.getElementById('snap-btn').style.display = 'none';
+         }
+         // ── Image compression helper ─────────────────────────────
+         async function compressImageToBase64(file, maxWidth = 512, quality = 0.6) {
+           return new Promise((resolve, reject) => {
+             const img = new Image();
+             const reader = new FileReader();
 
-    <!-- Photo + face map side by side -->
-    <div class="analysis-visual">
-      <div class="photo-thumb">
-        <img id="thumb-img" alt="Your selfie">
-      </div>
-      <div class="face-map-wrap">
-        <div class="face-map-label">Skin map</div>
-        <svg class="face-map-svg" viewBox="0 0 120 160" fill="none" xmlns="http://www.w3.org/2000/svg" id="face-svg">
-          <!-- Forehead -->
-          <ellipse id="z-forehead" cx="60" cy="34" rx="28" ry="14" opacity="0.7"/>
-          <!-- Left cheek -->
-          <ellipse id="z-left-cheek" cx="28" cy="85" rx="16" ry="18" opacity="0.7"/>
-          <!-- Right cheek -->
-          <ellipse id="z-right-cheek" cx="92" cy="85" rx="16" ry="18" opacity="0.7"/>
-          <!-- Nose / T-zone -->
-          <ellipse id="z-tzone" cx="60" cy="76" rx="8" ry="18" opacity="0.7"/>
-          <!-- Under eyes -->
-          <ellipse id="z-undereyes" cx="60" cy="63" rx="26" ry="6" opacity="0.7"/>
-          <!-- Chin -->
-          <ellipse id="z-chin" cx="60" cy="118" rx="16" ry="10" opacity="0.7"/>
-          <!-- Jawline -->
-          <ellipse id="z-jawline" cx="60" cy="110" rx="30" ry="5" opacity="0.6"/>
-          <!-- Face outline -->
-          <path d="M60 8 C34 8 22 28 22 52 C22 80 30 102 44 114 C50 120 56 128 60 132 C64 128 70 120 76 114 C90 102 98 80 98 52 C98 28 86 8 60 8 Z" stroke="#D0CBC5" stroke-width="1.5" fill="none"/>
-          <!-- Eyes suggestion -->
-          <ellipse cx="42" cy="62" rx="8" ry="5" fill="#E8E2DC" opacity="0.8"/>
-          <ellipse cx="78" cy="62" rx="8" ry="5" fill="#E8E2DC" opacity="0.8"/>
-          <!-- Labels -->
-          <text x="60" y="31" text-anchor="middle" font-size="7" fill="#8A8480" font-family="DM Sans, sans-serif">Forehead</text>
-          <text x="60" y="101" text-anchor="middle" font-size="7" fill="#8A8480" font-family="DM Sans, sans-serif">Chin</text>
-        </svg>
-      </div>
-    </div>
+             reader.onload = (event) => {
+               img.onload = () => {
+                 const canvas = document.createElement("canvas");
 
-    <div class="zone-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;"></div>Needs attention</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#EF9F27;"></div>Moderate</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div>Good</div>
-    </div>
+                 const scale = Math.min(maxWidth / img.width, 1);
+                 canvas.width = Math.round(img.width * scale);
+                 canvas.height = Math.round(img.height * scale);
 
-    <div class="scores-card" id="scores-card"></div>
+                 const ctx = canvas.getContext("2d");
+                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    <p style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;display:flex;align-items:center;gap:5px;">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      Your scores are private and used only to build your regimen.
-    </p>
-    <button class="btn-primary" id="btn-step2" onclick="runRegimen()">Build my regimen</button>
-    <button class="btn-ghost" onclick="goBack(1)">← Retake photo</button>
-  </div>
+                 const dataUrl = canvas.toDataURL("image/jpeg", quality);
+                 const base64 = dataUrl.split(",")[1];
 
-  <!-- Step 3 -->
-  <div id="step3" style="display:none;">
-    <div class="step-heading">
-      <h1>Your regimen</h1>
-      <p id="step3-subtitle"></p>
-    </div>
-    <div class="routine-label">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      Morning
-    </div>
-    <div id="morning-list"></div>
-    <div class="routine-label" style="margin-top:1.5rem;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      Night
-    </div>
-    <div id="night-list"></div>
-    <div class="reasoning-card" id="reasoning-card">
-      <h3>Why these products</h3>
-      <p id="reasoning-text"></p>
-    </div>
-    <div class="rules-badge">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span id="rules-applied-text">Rules applied from Airtable</span>
-    </div>
-    <button class="btn-ghost" style="margin-top:1.25rem;" onclick="goBack(2)">← Back to scores</button>
-  </div>
-</div>
+                 console.log("[IMAGE COMPRESSION]", {
+                   originalWidth: img.width,
+                   originalHeight: img.height,
+                   compressedWidth: canvas.width,
+                   compressedHeight: canvas.height,
+                   base64Length: base64.length
+                 });
 
-<script>
-const METRICS = [
-  ['acne','Acne / blemishes'],['redness','Redness'],['oiliness','Oiliness'],
-  ['moisture','Moisture'],['radiance','Radiance'],['age_spots','Age spots'],
-  ['texture','Texture'],['wrinkles','Wrinkles'],['dark_circles','Dark circles'],['firmness','Firmness']
-];
+                 resolve({
+                   base64: base64,
+                   dataUrl: dataUrl,
+                   mediaType: "image/jpeg"
+                 });
+               };
 
-// Map each SVG zone id to which metrics drive its colour
-const ZONE_METRICS = {
-  'z-forehead':    ['oiliness','wrinkles','age_spots'],
-  'z-left-cheek':  ['acne','redness','texture','age_spots'],
-  'z-right-cheek': ['acne','redness','texture','age_spots'],
-  'z-tzone':       ['oiliness','redness'],
-  'z-undereyes':   ['dark_circles'],
-  'z-chin':        ['acne','oiliness'],
-  'z-jawline':     ['firmness'],
-};
+               img.onerror = reject;
+               img.src = event.target.result;
+             };
 
-let skinScores = null, photoBase64 = null, photoType = null, photoDataUrl = null;
-let cameraStream = null;
+             reader.onerror = reject;
+             reader.readAsDataURL(file);
+           });
+         }
 
-// ── Camera ──────────────────────────────────────────────
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-    cameraStream = stream;
-    const video = document.getElementById('camera-stream');
-    video.srcObject = stream;
-    video.style.display = 'block';
-    document.getElementById('photo-options').style.display = 'none';
-    document.getElementById('snap-btn').style.display = 'flex';
-  } catch(err) {
-    // Camera denied — fall back to file upload
-    document.getElementById('photo-input').click();
-  }
-}
 
-function snapPhoto() {
-  const video  = document.getElementById('camera-stream');
-  const canvas = document.createElement('canvas');
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-  photoBase64  = photoDataUrl.split(',')[1];
-  photoType    = 'image/jpeg';
-  stopCamera();
-  showPreview(photoDataUrl);
-}
+         // ── File upload ──────────────────────────────────────────
+         async function onPhotoSelected() {
+           const file = document.getElementById('photo-input').files[0];
+           if (!file) return;
 
-function stopCamera() {
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  document.getElementById('camera-stream').style.display = 'none';
-  document.getElementById('snap-btn').style.display = 'none';
-}
+           const compressed = await compressImageToBase64(file, 768, 0.7);
 
-// ── File upload ──────────────────────────────────────────
-function onPhotoSelected() {
-  const file = document.getElementById('photo-input').files[0];
-  if (!file) return;
-  photoType = file.type || 'image/jpeg';
-  const reader = new FileReader();
-  reader.onload = e => { photoDataUrl = e.target.result; photoBase64 = photoDataUrl.split(',')[1]; showPreview(photoDataUrl); };
-  reader.readAsDataURL(file);
-}
+           photoType = compressed.mediaType;
+           photoDataUrl = compressed.dataUrl;
+           photoBase64 = compressed.base64;
 
-function showPreview(src) {
-  const img = document.getElementById('preview-img');
-  img.src = src; img.style.display = 'block';
-  document.getElementById('photo-options').style.display = 'none';
-  document.getElementById('change-btn').style.display = 'block';
-  checkStep1();
-}
+           showPreview(photoDataUrl);
+         }
 
-function resetPhoto() {
-  photoBase64 = null; photoDataUrl = null;
-  document.getElementById('preview-img').style.display = 'none';
-  document.getElementById('preview-img').src = '';
-  document.getElementById('photo-options').style.display = 'grid';
-  document.getElementById('change-btn').style.display = 'none';
-  document.getElementById('photo-input').value = '';
-  stopCamera();
-  checkStep1();
-}
+         function showPreview(src) {
+           const img = document.getElementById('preview-img');
+           img.src = src; img.style.display = 'block';
+           document.getElementById('photo-options').style.display = 'none';
+           document.getElementById('change-btn').style.display = 'block';
+           checkStep1();
+         }
 
-function checkStep1() {
-  document.getElementById('btn-step1').disabled = !(document.getElementById('market-select').value && photoBase64);
-}
+         function resetPhoto() {
+           photoBase64 = null; photoDataUrl = null;
+           document.getElementById('preview-img').style.display = 'none';
+           document.getElementById('preview-img').src = '';
+           document.getElementById('photo-options').style.display = 'grid';
+           document.getElementById('change-btn').style.display = 'none';
+           document.getElementById('photo-input').value = '';
+           stopCamera();
+           checkStep1();
+         }
 
-// ── Analysis ─────────────────────────────────────────────
-async function runAnalysis() {
-  const btn = document.getElementById('btn-step1');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Analysing…';
-  document.getElementById('step1-error').style.display = 'none';
-  try {
-    const res = await fetch('/analyse-skin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: photoBase64, media_type: photoType })
-    });
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    skinScores = await res.json();
-    renderScores(skinScores);
-    renderFaceMap(skinScores);
-    document.getElementById('thumb-img').src = photoDataUrl;
-    setStep(2);
-  } catch(err) {
-    const box = document.getElementById('step1-error');
-    box.textContent = 'Could not analyse: ' + err.message;
-    box.style.display = 'block';
-    btn.disabled = false;
-    btn.innerHTML = 'Analyse my skin';
-  }
-}
+         function checkStep1() {
+           document.getElementById('btn-step1').disabled = !(document.getElementById('market-select').value && photoBase64);
+         }
 
-function zoneColor(concern) {
-  if (concern >= 60) return '#E24B4A';
-  if (concern >= 35) return '#EF9F27';
-  return '#1D9E75';
-}
+         // ── Analysis ─────────────────────────────────────────────
+           async function compressImageToBase64(file, maxWidth = 768, quality = 0.7) {
+             return new Promise((resolve, reject) => {
+               const img = new Image();
+               const reader = new FileReader();
 
-function renderFaceMap(scores) {
-  Object.entries(ZONE_METRICS).forEach(([zoneId, metrics]) => {
-    const el = document.getElementById(zoneId);
-    if (!el) return;
-    // concern = 100 - score (scores are already flipped: high=good)
-    const avgConcern = metrics.reduce((sum, m) => sum + (100 - (scores[m] ?? 50)), 0) / metrics.length;
-    el.setAttribute('fill', zoneColor(avgConcern));
-    el.setAttribute('opacity', Math.min(0.55, 0.2 + avgConcern / 130));
-  });
-}
+               reader.onload = (event) => {
+                 img.onload = () => {
+                   const canvas = document.createElement("canvas");
 
-function scoreColor(v) {
-  if (v >= 70) return { bar:'#1D9E75', pillBg:'#E1F5EE', pillFg:'#085041', label:'good' };
-  if (v >= 40) return { bar:'#EF9F27', pillBg:'#FAEEDA', pillFg:'#854F0B', label:'moderate' };
-  return         { bar:'#E24B4A', pillBg:'#FCEBEB', pillFg:'#A32D2D', label:'attention' };
-}
+                   const scale = Math.min(maxWidth / img.width, 1);
+                   canvas.width = Math.round(img.width * scale);
+                   canvas.height = Math.round(img.height * scale);
 
-function renderScores(scores) {
-  const sel = document.getElementById('market-select');
-  document.getElementById('step2-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
-  const card = document.getElementById('scores-card');
-  card.innerHTML = '';
-  METRICS.forEach(([key, label]) => {
-    const v = Math.round(scores[key] ?? 50);
-    const c = scoreColor(v);
-    const row = document.createElement('div');
-    row.className = 'score-row fade-in';
-    row.innerHTML = `
-      <span class="score-name">${label}</span>
-      <div class="score-right">
-        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${v}%;background:${c.bar};"></div></div>
-        <span class="score-num">${v}</span>
-        <span class="score-pill" style="background:${c.pillBg};color:${c.pillFg};">${c.label}</span>
-      </div>`;
-    card.appendChild(row);
-  });
-}
+                   const ctx = canvas.getContext("2d");
+                   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-// ── Regimen ───────────────────────────────────────────────
-async function runRegimen() {
-  const market = document.getElementById('market-select').value;
-  const btn = document.getElementById('btn-step2');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Building regimen…';
-  try {
-    const res = await fetch('/recommend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ market, ...skinScores })
-    });
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    const data = await res.json();
-    renderRegimen(data);
-    setStep(3);
-  } catch(err) {
-    btn.disabled = false;
-    btn.innerHTML = 'Build my regimen';
-    alert('Could not load regimen: ' + err.message);
-  }
-}
+                   const dataUrl = canvas.toDataURL("image/jpeg", quality);
+                   const base64 = dataUrl.split(",")[1];
 
-function renderRegimen(data) {
-  const sel = document.getElementById('market-select');
-  document.getElementById('step3-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
-  ['morning','night'].forEach(time => {
-    const list = document.getElementById(time + '-list');
-    list.innerHTML = '';
-    const regimen = data[time + '_regimen'] || {};
-    let n = 1;
-    Object.entries(regimen).forEach(([step, p]) => {
-      if (!p || !p.product_name) return;
-      const card = document.createElement('div');
-      card.className = 'product-card fade-in';
-      card.innerHTML = `
-        <div class="step-badge"><span>${n}</span></div>
-        <div class="product-info">
-          <div class="product-step">${step}</div>
-          <div class="product-name">${p.product_name}</div>
-          ${p.rule_id ? `<div class="product-rule">Rule ${p.rule_id}</div>` : ''}
-        </div>
-        <span class="product-sku">${p.sku_id || ''}</span>`;
-      list.appendChild(card);
-      n++;
-    });
-  });
-  if (data.reasoning) {
-    document.getElementById('reasoning-text').textContent = data.reasoning;
-    document.getElementById('reasoning-card').style.display = 'block';
-  }
-  const count = (data.rules_applied || []).length;
-  document.getElementById('rules-applied-text').textContent = count + ' rule' + (count !== 1 ? 's' : '') + ' applied from Airtable';
-}
+                   console.log("[IMAGE COMPRESSION]", {
+                     originalWidth: img.width,
+                     originalHeight: img.height,
+                     compressedWidth: canvas.width,
+                     compressedHeight: canvas.height,
+                     base64Length: base64.length
+                   });
 
-// ── Navigation ────────────────────────────────────────────
-function setStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById('step'+i).style.display = (i===n) ? 'block' : 'none';
-    const dot = document.getElementById('dot-'+i);
-    if      (i < n)  { dot.className = 'p-dot done';   dot.textContent = '✓'; }
-    else if (i === n) { dot.className = 'p-dot active'; dot.textContent = i; }
-    else             { dot.className = 'p-dot idle';   dot.textContent = i; }
-  });
-  document.getElementById('line-1').className = 'p-line' + (n > 1 ? ' done' : '');
-  document.getElementById('line-2').className = 'p-line' + (n > 2 ? ' done' : '');
-  window.scrollTo({ top:0, behavior:'smooth' });
-  if (n === 2) { const b = document.getElementById('btn-step2'); b.disabled = false; b.innerHTML = 'Build my regimen'; }
-}
+                   resolve({
+                     base64: base64,
+                     dataUrl: dataUrl,
+                     mediaType: "image/jpeg"
+                   });
+                 };
 
-function goBack(to) {
-  if (to === 1) resetPhoto();
-  setStep(to);
-}
-</script>
-</body>
+                 img.onerror = reject;
+                 img.src = event.target.result;
+               };
+
+               reader.onerror = reject;
+               reader.readAsDataURL(file);
+             });
+           }
+         async function runAnalysis() {
+           const btn = document.getElementById('btn-step1');
+           btn.disabled = true;
+           btn.innerHTML = '<span class="spinner"></span>Analysing…';
+           document.getElementById('step1-error').style.display = 'none';
+           try {
+             const res = await fetch('/analyse-skin', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ image: photoBase64, media_type: photoType })
+             });
+             if (!res.ok) throw new Error('Server error ' + res.status);
+             skinScores = await res.json();
+             renderScores(skinScores);
+             renderFaceMap(skinScores);
+             document.getElementById('thumb-img').src = photoDataUrl;
+             setStep(2);
+           } catch(err) {
+             const box = document.getElementById('step1-error');
+             box.textContent = 'Could not analyse: ' + err.message;
+             box.style.display = 'block';
+             btn.disabled = false;
+             btn.innerHTML = 'Analyse my skin';
+           }
+         }
+
+         function zoneColor(concern) {
+           if (concern >= 60) return '#E24B4A';
+           if (concern >= 35) return '#EF9F27';
+           return '#1D9E75';
+         }
+
+         function renderFaceMap(scores) {
+           Object.entries(ZONE_METRICS).forEach(([zoneId, metrics]) => {
+             const el = document.getElementById(zoneId);
+             if (!el) return;
+             // concern = 100 - score (scores are already flipped: high=good)
+             const avgConcern = metrics.reduce((sum, m) => sum + (100 - (scores[m] ?? 50)), 0) / metrics.length;
+             el.setAttribute('fill', zoneColor(avgConcern));
+             el.setAttribute('opacity', Math.min(0.55, 0.2 + avgConcern / 130));
+           });
+         }
+
+         function scoreColor(v) {
+           if (v >= 70) return { bar:'#1D9E75', pillBg:'#E1F5EE', pillFg:'#085041', label:'good' };
+           if (v >= 40) return { bar:'#EF9F27', pillBg:'#FAEEDA', pillFg:'#854F0B', label:'moderate' };
+           return         { bar:'#E24B4A', pillBg:'#FCEBEB', pillFg:'#A32D2D', label:'attention' };
+         }
+
+         function renderScores(scores) {
+           const sel = document.getElementById('market-select');
+           document.getElementById('step2-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
+           const card = document.getElementById('scores-card');
+           card.innerHTML = '';
+           METRICS.forEach(([key, label]) => {
+             const v = Math.round(scores[key] ?? 50);
+             const c = scoreColor(v);
+             const row = document.createElement('div');
+             row.className = 'score-row fade-in';
+             row.innerHTML = `
+               <span class="score-name">${label}</span>
+               <div class="score-right">
+                 <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${v}%;background:${c.bar};"></div></div>
+                 <span class="score-num">${v}</span>
+                 <span class="score-pill" style="background:${c.pillBg};color:${c.pillFg};">${c.label}</span>
+               </div>`;
+             card.appendChild(row);
+           });
+         }
+
+         // ── Regimen ───────────────────────────────────────────────
+         async function runRegimen() {
+           const market = document.getElementById('market-select').value;
+           const btn = document.getElementById('btn-step2');
+           btn.disabled = true;
+           btn.innerHTML = '<span class="spinner"></span>Building regimen…';
+           try {
+             const res = await fetch('/recommend', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ market, ...skinScores })
+             });
+             if (!res.ok) throw new Error('Server error ' + res.status);
+             const data = await res.json();
+             renderRegimen(data);
+             setStep(3);
+           } catch(err) {
+             btn.disabled = false;
+             btn.innerHTML = 'Build my regimen';
+             alert('Could not load regimen: ' + err.message);
+           }
+         }
+
+         function renderRegimen(data) {
+           const sel = document.getElementById('market-select');
+           document.getElementById('step3-subtitle').textContent = sel.options[sel.selectedIndex].text + ' market';
+           ['morning','night'].forEach(time => {
+             const list = document.getElementById(time + '-list');
+             list.innerHTML = '';
+             const regimen = data[time + '_regimen'] || {};
+             let n = 1;
+             Object.entries(regimen).forEach(([step, p]) => {
+               if (!p || !p.product_name) return;
+               const card = document.createElement('div');
+               card.className = 'product-card fade-in';
+               card.innerHTML = `
+                 <div class="step-badge"><span>${n}</span></div>
+                 <div class="product-info">
+                   <div class="product-step">${step}</div>
+                   <div class="product-name">${p.product_name}</div>
+                   ${p.rule_id ? `<div class="product-rule">Rule ${p.rule_id}</div>` : ''}
+                 </div>
+                 <span class="product-sku">${p.sku_id || ''}</span>`;
+               list.appendChild(card);
+               n++;
+             });
+           });
+           if (data.reasoning) {
+             document.getElementById('reasoning-text').textContent = data.reasoning;
+             document.getElementById('reasoning-card').style.display = 'block';
+           }
+           const count = (data.rules_applied || []).length;
+           document.getElementById('rules-applied-text').textContent = count + ' rule' + (count !== 1 ? 's' : '') + ' applied from Airtable';
+         }
+
+         // ── Navigation ────────────────────────────────────────────
+         function setStep(n) {
+           [1,2,3].forEach(i => {
+             document.getElementById('step'+i).style.display = (i===n) ? 'block' : 'none';
+             const dot = document.getElementById('dot-'+i);
+             if      (i < n)  { dot.className = 'p-dot done';   dot.textContent = '✓'; }
+             else if (i === n) { dot.className = 'p-dot active'; dot.textContent = i; }
+             else             { dot.className = 'p-dot idle';   dot.textContent = i; }
+           });
+           document.getElementById('line-1').className = 'p-line' + (n > 1 ? ' done' : '');
+           document.getElementById('line-2').className = 'p-line' + (n > 2 ? ' done' : '');
+           window.scrollTo({ top:0, behavior:'smooth' });
+           if (n === 2) { const b = document.getElementById('btn-step2'); b.disabled = false; b.innerHTML = 'Build my regimen'; }
+         }
+
+         function goBack(to) {
+           if (to === 1) resetPhoto();
+           setStep(to);
+         }
+      </script>
+   </body>
 </html>
