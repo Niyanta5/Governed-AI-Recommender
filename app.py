@@ -149,16 +149,188 @@ def build_fallback_recommendation(skin_scores, market):
     }
 
 
+def normalize_recommendation_schema(recommendation):
+    """
+    Converts Claude's flexible output into the exact schema expected by the frontend.
+
+    Expected frontend schema:
+    {
+      "morning": [
+        {
+          "slot": "...",
+          "product_name": "...",
+          "sku": "...",
+          "reason": "...",
+          "rule_id": "..."
+        }
+      ],
+      "night": [...],
+      "reasoning": "...",
+      "rules_applied": [...]
+    }
+    """
+
+    if not isinstance(recommendation, dict):
+        return recommendation
+
+    # Some Claude responses may nest routines under these keys.
+    container = recommendation
+
+    for possible_container_key in [
+        "routine",
+        "regimen",
+        "recommendation",
+        "recommendations",
+    ]:
+        if isinstance(recommendation.get(possible_container_key), dict):
+            container = recommendation[possible_container_key]
+            break
+
+    morning_raw = (
+        container.get("morning")
+        or container.get("Morning")
+        or container.get("am")
+        or container.get("AM")
+        or container.get("day")
+        or []
+    )
+
+    night_raw = (
+        container.get("night")
+        or container.get("Night")
+        or container.get("pm")
+        or container.get("PM")
+        or container.get("evening")
+        or []
+    )
+
+    def normalize_product(product):
+        if not isinstance(product, dict):
+            return None
+
+        product_name = (
+            product.get("product_name")
+            or product.get("name")
+            or product.get("product")
+            or product.get("productName")
+            or product.get("Product Name")
+            or product.get("Product")
+        )
+
+        sku = (
+            product.get("sku")
+            or product.get("SKU")
+            or product.get("sku_id")
+            or product.get("product_sku")
+            or product.get("productSku")
+            or product.get("Product SKU")
+        )
+
+        rule_id = (
+            product.get("rule_id")
+            or product.get("rule")
+            or product.get("ruleId")
+            or product.get("rule_id_applied")
+            or product.get("applied_rule")
+            or product.get("appliedRule")
+        )
+
+        # If Claude returns a list of rule IDs, use the first one for product-level rule_id.
+        rule_ids = (
+            product.get("rule_ids")
+            or product.get("rules")
+            or product.get("rules_applied")
+        )
+
+        if not rule_id and isinstance(rule_ids, list) and len(rule_ids) > 0:
+            rule_id = rule_ids[0]
+
+        reason = (
+            product.get("reason")
+            or product.get("reasoning")
+            or product.get("rationale")
+            or product.get("why")
+            or product.get("explanation")
+            or ""
+        )
+
+        slot = (
+            product.get("slot")
+            or product.get("step")
+            or product.get("category")
+            or product.get("product_type")
+            or product.get("type")
+            or "Product"
+        )
+
+        return {
+            "slot": str(slot),
+            "product_name": str(product_name) if product_name else "",
+            "sku": str(sku) if sku else "",
+            "reason": str(reason),
+            "rule_id": str(rule_id) if rule_id else "",
+        }
+
+    morning = []
+    for item in morning_raw:
+        normalized = normalize_product(item)
+        if normalized:
+            morning.append(normalized)
+
+    night = []
+    for item in night_raw:
+        normalized = normalize_product(item)
+        if normalized:
+            night.append(normalized)
+
+    reasoning = (
+        recommendation.get("reasoning")
+        or recommendation.get("rationale")
+        or recommendation.get("why_these_products")
+        or recommendation.get("why")
+        or recommendation.get("explanation")
+        or container.get("reasoning")
+        or container.get("rationale")
+        or ""
+    )
+
+    rules_applied = (
+        recommendation.get("rules_applied")
+        or recommendation.get("rule_ids")
+        or recommendation.get("rules")
+        or container.get("rules_applied")
+        or container.get("rule_ids")
+        or []
+    )
+
+    if not isinstance(rules_applied, list):
+        rules_applied = [rules_applied]
+
+    # Also collect product-level rule IDs.
+    for product in morning + night:
+        rule_id = product.get("rule_id")
+        if rule_id and rule_id not in rules_applied:
+            rules_applied.append(rule_id)
+
+    normalized_response = {
+        **recommendation,
+        "morning": morning,
+        "night": night,
+        "reasoning": reasoning,
+        "rules_applied": rules_applied,
+    }
+
+    return normalized_response
+
+
 def is_valid_recommendation(recommendation):
     """
-    Basic guardrail validation for Claude recommendation output.
-    This prevents broken or incomplete responses from reaching the frontend.
+    Validates the normalized recommendation schema.
 
-    It checks that:
-    - response is a dictionary
-    - morning and night routines exist
-    - at least one product exists
-    - every product has a name, SKU, and rule_id
+    After normalization, every product should have:
+    - product_name
+    - sku
+    - rule_id
     """
 
     if not isinstance(recommendation, dict):
@@ -182,17 +354,13 @@ def is_valid_recommendation(recommendation):
         if not isinstance(product, dict):
             return False
 
-        product_name = product.get("product_name") or product.get("name")
-        sku = product.get("sku")
-        rule_id = product.get("rule_id")
-
-        if not product_name:
+        if not product.get("product_name"):
             return False
 
-        if not sku:
+        if not product.get("sku"):
             return False
 
-        if not rule_id:
+        if not product.get("rule_id"):
             return False
 
     return True
@@ -343,8 +511,16 @@ def recommend():
     try:
         recommendation = get_recommendation(skin_scores, market)
 
+        print("[DEBUG] Raw recommendation from Claude:")
+        print(json.dumps(recommendation, indent=2))
+
+        recommendation = normalize_recommendation_schema(recommendation)
+
+        print("[DEBUG] Normalized recommendation:")
+        print(json.dumps(recommendation, indent=2))
+
         if not is_valid_recommendation(recommendation):
-            print("[VALIDATION FAILED] Claude recommendation was incomplete. Using fallback.")
+            print("[VALIDATION FAILED] Normalized recommendation was incomplete. Using fallback.")
             recommendation = build_fallback_recommendation(skin_scores, market)
 
         set_cache(recommendation_cache_key, recommendation)
