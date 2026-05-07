@@ -20,10 +20,10 @@ YOUR RULES:
 1. NEVER recommend a product that does not exist in the provided product catalog
 2. ALWAYS cite the rule_id of every rule you apply
 3. ALWAYS apply Base_Regimen rules first, then Focused_Treatment overrides
-4. NEVER override a business rule — you can only explain one
+4. NEVER override a business rule - you can only explain one
 5. If two concerns conflict, use the concern priority table to determine which wins
-6. ALWAYS return valid JSON — no exceptions
-7. Do NOT wrap your JSON in markdown code fences — return raw JSON only
+6. ALWAYS return valid JSON - no exceptions
+7. Do NOT wrap your JSON in markdown code fences - return raw JSON only
 
 OUTPUT FORMAT:
 Return a raw JSON object with exactly this structure (no markdown, no code fences):
@@ -44,29 +44,24 @@ Return a raw JSON object with exactly this structure (no markdown, no code fence
   },
   "reasoning": "Explicit explanation of every rule applied",
   "rules_applied": ["RUL_US_001", "RUL_US_002"],
-  "governance_note": "Rules fetched live from Airtable via MCP",
+  "governance_note": "Rules fetched live from Airtable",
   "confidence": 0.95
 }"""
 
 
 def fetch_all_airtable_data(market):
-    """Fetch rules, products, and concern priority in parallel."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         f_rules    = executor.submit(get_rules,            market)
         f_products = executor.submit(get_products,         market)
         f_priority = executor.submit(get_concern_priority, market)
-
         rules    = f_rules.result()
         products = f_products.result()
         priority = f_priority.result()
-
     return rules, products, priority
 
 
 def clean_json(text):
-    """Robustly extract JSON from Claude's response."""
     text = text.strip()
-
     if "```" in text:
         for part in text.split("```"):
             part = part.strip()
@@ -75,20 +70,16 @@ def clean_json(text):
             if part.startswith("{"):
                 text = part
                 break
-
     start = text.find("{")
     end   = text.rfind("}")
     if start != -1 and end != -1:
         text = text[start:end + 1]
-
     return text
 
 
 def get_recommendation(skin_scores, market):
-    # ── Step 1: fetch all Airtable data in parallel (cached after first call) ──
     rules, products, priority = fetch_all_airtable_data(market)
 
-    # ── Step 2: single Claude call with all data pre-loaded ───────────────────
     user_message = f"""Please recommend a skincare regimen for this customer.
 
 MARKET: {market}
@@ -114,13 +105,7 @@ PRODUCT CATALOG (fetched live from Airtable):
 CONCERN PRIORITY TABLE (fetched live from Airtable):
 {json.dumps(priority, indent=2)}
 
-INSTRUCTIONS:
-1. Determine overall skin health tier from the scores
-2. Apply base regimen rules for that tier
-3. Check if any focused treatment rules apply
-4. Use concern priority if multiple concerns need attention
-5. Only recommend products that exist in the product catalog above
-6. Return ONLY raw JSON — no markdown, no explanation outside the JSON
+Return ONLY raw JSON - no markdown, no explanation outside the JSON.
 """
 
     try:
@@ -136,13 +121,8 @@ INSTRUCTIONS:
     for block in response.content:
         if hasattr(block, "text"):
             try:
-                cleaned = clean_json(block.text)
-                return json.loads(cleaned)
+                return json.loads(clean_json(block.text))
             except json.JSONDecodeError as e:
-                preview = block.text[:500] if block.text else "empty"
-                return {
-                    "error": f"Could not parse Claude response: {str(e)}",
-                    "raw_preview": preview
-                }
+                return {"error": f"JSON parse error: {str(e)}", "raw": block.text[:500]}
 
-    return {"error": "No recommendation generated"}
+    return {"error": "No response generated"}
