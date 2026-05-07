@@ -29,35 +29,37 @@ def analyse_skin():
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=300,
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": media_type,
-                        "data": image_b64,
-                    }
-                },
-                {
-                    "type": "text",
-                    "text": (
-                        "You are a skincare analyst. Score each skin concern "
-                        "0-100 where 0 = no concern at all, 100 = severe concern. "
-                        "Return ONLY raw JSON, no markdown, no explanation:\n"
-                        '{"acne":0,"redness":0,"oiliness":0,'
-                        '"moisture":0,"radiance":0,"age_spots":0,'
-                        '"texture":0,"wrinkles":0,"dark_circles":0,'
-                        '"firmness":0}'
-                    )
-                }
-            ]
-        }]
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": media_type,
+                            "data": image_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            "You are a skincare analyst. Score each skin concern "
+                            "0-100 where 0 = no concern at all, 100 = severe concern. "
+                            "Return ONLY raw JSON, no markdown, no explanation:\n"
+                            '{"acne":0,"redness":0,"oiliness":0,'
+                            '"moisture":0,"radiance":0,"age_spots":0,'
+                            '"texture":0,"wrinkles":0,"dark_circles":0,'
+                            '"firmness":0}'
+                        ),
+                    },
+                ],
+            }
+        ],
     )
 
     text = message.content[0].text.strip()
-    match = re.search(r'\{[\s\S]*\}', text)
+    match = re.search(r"\{[\s\S]*\}", text)
     raw = json.loads(match.group()) if match else {}
     flipped = {k: round(100 - float(v)) for k, v in raw.items()}
     return jsonify(flipped)
@@ -69,16 +71,18 @@ def recommend():
     market = data.get("market", request.form.get("market", "US"))
 
     skin_scores = {
-        "acne":         float(data.get("acne",         request.form.get("acne", 75))),
-        "redness":      float(data.get("redness",      request.form.get("redness", 75))),
-        "oiliness":     float(data.get("oiliness",     request.form.get("oiliness", 75))),
-        "moisture":     float(data.get("moisture",     request.form.get("moisture", 75))),
-        "radiance":     float(data.get("radiance",     request.form.get("radiance", 75))),
-        "age_spots":    float(data.get("age_spots",    request.form.get("age_spots", 75))),
-        "texture":      float(data.get("texture",      request.form.get("texture", 75))),
-        "wrinkles":     float(data.get("wrinkles",     request.form.get("wrinkles", 75))),
-        "dark_circles": float(data.get("dark_circles", request.form.get("dark_circles", 75))),
-        "firmness":     float(data.get("firmness",     request.form.get("firmness", 75))),
+        "acne": float(data.get("acne", request.form.get("acne", 75))),
+        "redness": float(data.get("redness", request.form.get("redness", 75))),
+        "oiliness": float(data.get("oiliness", request.form.get("oiliness", 75))),
+        "moisture": float(data.get("moisture", request.form.get("moisture", 75))),
+        "radiance": float(data.get("radiance", request.form.get("radiance", 75))),
+        "age_spots": float(data.get("age_spots", request.form.get("age_spots", 75))),
+        "texture": float(data.get("texture", request.form.get("texture", 75))),
+        "wrinkles": float(data.get("wrinkles", request.form.get("wrinkles", 75))),
+        "dark_circles": float(
+            data.get("dark_circles", request.form.get("dark_circles", 75))
+        ),
+        "firmness": float(data.get("firmness", request.form.get("firmness", 75))),
     }
 
     recommendation = get_recommendation(skin_scores, market)
@@ -93,26 +97,27 @@ def admin():
 
 @app.route("/health")
 def health():
-    return jsonify({
-        "status":  "ok",
-        "version": "1.0.0",
-        "mcp":     "enabled",
-        "markets": len(get_market_config())
-    })
+    return jsonify(
+        {
+            "status": "ok",
+            "version": "1.0.0",
+            "mcp": "enabled",
+            "markets": len(get_market_config()),
+        }
+    )
 
 
 @app.route("/debug")
 def debug():
-    from airtable_client import get_rules, get_products
-    rules    = get_rules(market="US")
-    products = get_products(market="US")
-    return jsonify({
-        "rules_count":    len(rules),
-        "products_count": len(products),
-        "sample_rule":    rules[0] if rules else None,
-    })
+    from airtable_client import fetch_table
 
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    rules = fetch_table("Business_Rules")
+    products = fetch_table("Products")
+    return jsonify(
+        {
+            "rules_total": len(rules),
+            "products_total": len(products),
+            "sample_rule": rules[0] if rules else None,
+            "sample_product": products[0] if products else None,
+        }
+    )
